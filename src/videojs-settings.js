@@ -19,7 +19,7 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         this.addClass(this.className);
         var items = [];
         var player = this.player_;
-        var opt = this.options();
+        var opt = this.options_;
         if (opt.info)
         {
             opt.info = vjs.mergeOptions({label: 'Technical info'}, opt.info);
@@ -224,7 +224,7 @@ vjs.registerComponent('NotifyOverlay', vjs.extend(Overlay, {
 }));
 var MenuItem = vjs.getComponent('MenuItem');
 var ReportButton = vjs.registerComponent('ReportButton', vjs.extend(MenuItem, {
-    init: function(player, options){
+    constructor: function(player, options){
         MenuItem.call(this, player, options);
         var player_ = player;
         this.on('click', function(){
@@ -238,7 +238,7 @@ var ReportButton = vjs.registerComponent('ReportButton', vjs.extend(MenuItem, {
     }
 }));
 var InfoButton = vjs.registerComponent('InfoButton', vjs.extend(MenuItem, {
-    init: function(player, options){
+    constructor: function(player, options){
         MenuItem.call(this, player, options);
         this.on('click', function(){
             // XXX alexeym/michaelg: use vjs api to get overlay object
@@ -259,7 +259,7 @@ var MenuLabel = vjs.registerComponent('MenuLabel', vjs.extend(Component, {
 }));
 var QualityButton = vjs.registerComponent('QualityButton',
     vjs.extend(MenuItem, {
-    init: function(player, options){
+    constructor: function(player, options){
         MenuItem.call(this, player, options);
         this.player_.one('play', vjs.bind(this, this.update));
         this.player_.on('resolutionchange', vjs.bind(this, this.update));
