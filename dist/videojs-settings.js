@@ -10,7 +10,67 @@ var vjs_merge = function(obj1, obj2){
     }
     return obj1;
 };
-var info_overlay, notify_overlay;
+var info_overlay, notify_overlay, popup_menu;
+var Menu = vjs.getComponent('Menu');
+vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
+    className: 'vjs-rightclick-popup',
+    popped: false,
+    constructor: function(player, options){
+        Menu.call(this, player, options);
+        var player_ = player;
+        this.addClass(this.className);
+        this.hide();
+        var _this = this;
+        var opt = this.options_;
+        var opt_report = vjs.mergeOptions({label: 'Report playback issue'},
+            opt.report);
+        this.addChild(new ReportButton(player, opt_report));
+        var opt_savelog = vjs.mergeOptions({label: 'Save logs to disk'});
+        this.addChild(new LogButton(player,opt_savelog));
+        if (opt.info)
+        {
+            opt.info = vjs.mergeOptions({label: 'Technical info'}, opt.info);
+            this.addChild(new InfoButton(player, opt.info));
+        }
+        player_.on('contextmenu', function(evt){
+            evt.preventDefault();
+            if(_this.popped)
+            {
+                _this.hide();
+                _this.popped = false;
+            }
+            else
+            {
+                _this.show();
+                var oX = evt.offsetX;
+                var oY = evt.offsetY;
+                if (_this.el_.offsetWidth+oX>player_.el_.offsetWidth)
+                    oX = oX-_this.el_.offsetWidth;
+                if (_this.el_.offsetHeight+oY>player_.el_.offsetHeight)
+                    oY = oY-_this.el_.offsetHeight;
+                _this.el_.style.top=oY+'px';
+                _this.el_.style.left=oX+'px';
+                _this.popped = true;
+            }
+        });
+        player_.on('click', function(evt){
+            if (_this.popped)
+            {
+                _this.hide();
+                _this.popped = false;
+                evt.stopPropagation();
+                evt.preventDefault();
+                return false;
+            }
+        });
+        this.children().forEach(function(item){
+            item.on('click', function(evt){
+                _this.hide();
+                _this.popped = false;
+            });
+        });
+    }
+}));
 var MenuButton = vjs.getComponent('MenuButton');
 vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
     buttonText: 'Settings',
@@ -237,6 +297,17 @@ var ReportButton = vjs.registerComponent('ReportButton', vjs.extend(MenuItem, {
         });
     }
 }));
+var LogButton = vjs.registerComponent('LogButton', vjs.extend(MenuItem, {
+    constructor: function(player, options){
+        MenuItem.call(this, player, options);
+        var player_ = player;
+        this.on('click', function(){
+            // XXX alexeym: make it work without cdn
+            player_.trigger({type: 'save_logs'});
+            this.selected(false);
+        });
+    }
+}));
 var InfoButton = vjs.registerComponent('InfoButton', vjs.extend(MenuItem, {
     constructor: function(player, options){
         MenuItem.call(this, player, options);
@@ -317,6 +388,8 @@ vjs.plugin('settings_button', function(opt){
                 {'class': 'vjs-notify-overlay'});
             notify_overlay.addClass('vjs-hidden');
         }
+        popup_menu = video.addChild('PopupMenu',
+            vjs.mergeOptions({}, opt));
     });
 });
 
