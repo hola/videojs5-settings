@@ -96,14 +96,9 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         if (sources && sources.length>1)
         {
             items.push(new MenuLabel(player, {label: 'Quality'}));
-            var item;
             for (var i=0; i<sources.length; i+=1)
             {
-                if (!sources[i].src)
-                    continue;
-                if (!sources[i].label)
-                    sources[i].label = sources[i].type;
-                item = new QualityButton(player, sources[i]);
+                var item = new QualityButton(player, sources[i]);
                 item.addClass('vjs-menu-indent');
                 items.push(item);
             }
@@ -334,6 +329,8 @@ var QualityButton = vjs.registerComponent('QualityButton',
         MenuItem.call(this, player, options);
         this.player_.one('play', vjs.bind(this, this.update));
         this.player_.on('resolutionchange', vjs.bind(this, this.update));
+        if (options['default'])
+            this.player_.src(options.src);
     },
     handleClick: function(){
         var player = this.player_;
@@ -370,7 +367,65 @@ var QualityButton = vjs.registerComponent('QualityButton',
 
 vjs.plugin('settings_button', function(opt){
     var video = this;
+    opt = vjs.mergeOptions({}, opt);
     video.on('ready', function(){
+        function local_storage_set(key, value){
+            try { vjs.utils.localStorage.setItem(key, value); } catch(e){}
+        }
+        function local_storage_get(key){
+            try { return vjs.utils.localStorage.getItem(key); }
+            catch(e){ return null; }
+        }
+        function sources_normalize(sources, label_sav){
+            var i, source_def, source_sav;
+            sources = sources.filter(function(e){ return e.src; });
+            for (i=0; i<sources.length; i+=1)
+            {
+                if (!sources[i].label)
+                    sources[i].label = sources[i].type;
+                if (!source_def && sources[i]['default'])
+                    source_def = sources[i];
+                if (label_sav && label_sav==sources[i].label)
+                    source_sav = sources[i];
+            }
+            for (i=0; i<sources.length; i+=1)
+            {
+                sources[i]['default'] =
+                    source_sav ? sources[i]===source_sav :
+                    source_def ? sources[i]===source_def : !i;
+            }
+            return sources;
+        }
+        if (opt.volume||opt.volume===undefined)
+        {
+            var volume_defaults = {level: 1, mute: false};
+            var volume_key = 'vjs5_volume', mute_key = 'vjs5_mute';
+            var volume = local_storage_get(volume_key);
+            var mute = local_storage_get(mute_key);
+            opt.volume = vjs.mergeOptions(volume_defaults, opt.volume);
+            video.volume(volume!=null ? volume : opt.volume.level);
+            video.muted(mute!=null ? mute==='true' : opt.volume.mute);
+            video.on('volumechange', function() {
+                local_storage_set(volume_key, video.volume());
+                local_storage_set(mute_key, video.muted());
+            });
+        }
+        if (opt.quality&&opt.quality.sources&&opt.quality.sources.length>1)
+        {
+            var quality_key = 'vjs5_quality';
+            opt.quality.sources = sources_normalize(opt.quality.sources,
+                local_storage_get(quality_key));
+            video.on('resolutionchange', function(){
+                var sources = opt.quality.sources;
+                for (var i=0; i<sources.length; i++)
+                {
+                    if (video.currentSrc()!=sources[i].src)
+                        continue;
+                    local_storage_set(quality_key, sources[i].label);
+                    break;
+                }
+            });
+        }
         if (opt.info||opt.report||
             (opt.quality&&opt.quality.sources&&opt.quality.sources.length))
         {
