@@ -1,6 +1,6 @@
 {
   "name": "videojs-settings",
-  "version": "0.0.1-6",
+  "version": "0.0.1-7",
   "description": "A settings button for Video.js",
   "main": "videojs-settings.js",
   "scripts": {
