@@ -104,7 +104,28 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
             }
         }
         return items;
-    }
+    },
+    createMenu: function(){
+        var _this = this;
+        var opt = this.options_;
+        var menu = MenuButton.prototype.createMenu.call(this);
+        if (opt.show_settings_popup_on_click)
+        {
+            menu.addClass('vjs-menu-popup-on-click');
+            // videojs removes the locking state on menu item click that causes
+            // settings button to hide without updating buttonPressed state
+            menu.children().forEach(function(component){
+                component.on('click', function(){ _this.handleClick(); });
+            });
+        }
+        return menu;
+    },
+    handleClick: function(){
+        if (this.buttonPressed_)
+            this.unpressButton();
+        else
+            this.pressButton();
+    },
 }));
 var Component = vjs.getComponent('Component');
 vjs.registerComponent('Overlay', vjs.extend(Component, {
