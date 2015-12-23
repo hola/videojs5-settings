@@ -330,7 +330,10 @@ var QualityButton = vjs.registerComponent('QualityButton',
         this.player_.one('play', vjs.bind(this, this.update));
         this.player_.on('resolutionchange', vjs.bind(this, this.update));
         if (options['default'])
+        {
             this.player_.src(options.src);
+            this.update();
+        }
     },
     handleClick: function(){
         var player = this.player_;
