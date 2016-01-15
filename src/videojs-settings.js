@@ -368,6 +368,8 @@ var QualityButton = vjs.registerComponent('QualityButton',
             player.trigger('resolutionchange');
             return this; // basically a no-op
         }
+        if (quality.onclick && !quality.onclick(quality))
+            return;
         var current_time = player.currentTime();
         var remain_paused = player.paused();
         player.pause();
@@ -409,8 +411,13 @@ vjs.plugin('settings_button', function(opt){
                     sources[i].label = sources[i].type;
                 if (!source_def && sources[i]['default'])
                     source_def = sources[i];
-                if (label_sav && label_sav==sources[i].label)
+                // XXX volodymyr: ignore cached quality user choice if it has
+                // an onclick hook
+                if (label_sav && label_sav==sources[i].label &&
+                    !sources[i].onclick)
+                {
                     source_sav = sources[i];
+                }
             }
             for (i=0; i<sources.length; i+=1)
             {
