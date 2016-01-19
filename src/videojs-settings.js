@@ -391,7 +391,7 @@ var QualityButton = vjs.registerComponent('QualityButton',
     },
 }));
 
-vjs.plugin('settings_button', function(opt){
+vjs.plugin('settings', function(opt){
     var video = this;
     opt = vjs.mergeOptions({}, opt);
     video.on('ready', function(){
