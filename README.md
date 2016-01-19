@@ -37,7 +37,7 @@ To start using Hola settings plugin, follow these steps:
         report: true,
         quality: {
           sources: [
-            {src:"http://cdn.example.com/static/mp4/example_1080p.mp4", type: "video/mp4", label: "high"},
+            {src:"http://cdn.example.com/static/mp4/example_1080p.mp4", type: "video/mp4", label: "high", onclick: function(){ login(); },
             {src:"http://cdn.example.com/static/mp4/example_720p.mp4", type: "video/mp4", label: "medium"},
             {src:"http://cdn.example.com/static/mp4/example_360p.mp4", type: "video/mp4", label: "low", "default": true}
           ]
@@ -60,8 +60,9 @@ The following configuration options are supported by this plugin:
 | quality.sources[i].src        | ```<String>```       |          | Media source URL |
 | quality.sources[i].type       | ```<String>```       |          | Media source type |
 | quality.sources[i].label      | ```<String>```       |          | Media source label: shown in settings menu |
-| quality.sources[i]['default'] | ```<Boolean>```   | false    | Media source to be selected by default. NOTE: this may be overriden by persistent configuration.|
+| quality.sources[i]['default'] | ```<Boolean>```      | false    | Media source to be selected by default. NOTE: this may be overriden by persistent configuration.|
+| quality.sources[i].onclick    | ```<Function>```     |          | Add an onclick hook called when user selects this quality. Returning non-true value will ignore user request. Important when, for instance, HD quality is available for logged-in users only. |
 | volume                        | ```<Object>|false``` |          | Default volume configuration. Use `false` to disable default volume control including saved persistent configuration. |
 | volume.level                  | ```<Float>```        | 1.0      | Volume level between 0.0 and 1.0. NOTE: use volume.mute instead of 0.0 if you want to disable volume level |
 | volume.mute                   | ```<Boolean>```      | false    | Volume mute |
-| show_settings_popup_on_click  | ```<Boolean>```    | false    | Select the trigger method to show settings menu: onhover (false) or onclick (true) |
+| show_settings_popup_on_click  | ```<Boolean>```      | false    | Select the trigger method to show settings menu: onhover (false) or onclick (true) |
