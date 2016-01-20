@@ -23,6 +23,6 @@
     "load-grunt-tasks": "~0.4.0"
   },
   "dependencies": {
-    "videojs-utils": "hola/videojs-utils"
+    "videojs-utils": "hola/videojs-utils#v0.0.1-1"
   }
 }
