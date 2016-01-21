@@ -19,14 +19,18 @@ To start using Hola settings plugin, follow these steps:
 1. Add these includes to your document's `<head>`:
 
   ```html
-  <script src="https://cdn.rawgit.com/hola/videojs5-settings/bb54f577487475183edc58994c05518ba5f72459/dist/videojs-settings.min.js"></script>
+  <script src="https://cdn.rawgit.com/hola/videojs5-settings/08567a8660366ba71cb937ae2b8fdc2cf8369e56/dist/videojs-settings.min.js"></script>
   ```
 
 2. Set `plugins` option for your Video.js setup:
 
   In video tag `data-setup` attribute in your html
   ```html
-  data-setup='{"plugins":{"settings": {"info": true, "report": true, ...}}}'
+  <video ... data-setup='{"plugins":{"settings":{"info":true,"report":true,"quality":true}}}'>
+    <source src="http://cdn.example.com/static/mp4/example_1080p.mp4" type="video/mp4" label="high" />
+    <source src="http://cdn.example.com/static/mp4/example_720p.mp4" type="video/mp4" label="medium" />
+    <source src="http://cdn.example.com/static/mp4/example_360p.mp4" type="video/mp4" label="low" default />
+  </video>
   ```
   or in javascript videojs call:
   ```javascript
@@ -37,7 +41,7 @@ To start using Hola settings plugin, follow these steps:
         report: true,
         quality: {
           sources: [
-            {src:"http://cdn.example.com/static/mp4/example_1080p.mp4", type: "video/mp4", label: "high", onclick: function(){ login(); },
+            {src:"http://cdn.example.com/static/mp4/example_1080p.mp4", type: "video/mp4", label: "high"},
             {src:"http://cdn.example.com/static/mp4/example_720p.mp4", type: "video/mp4", label: "medium"},
             {src:"http://cdn.example.com/static/mp4/example_360p.mp4", type: "video/mp4", label: "low", "default": true}
           ]
@@ -60,9 +64,14 @@ The following configuration options are supported by this plugin:
 | quality.sources[i].src        | ```<String>```       |          | Media source URL |
 | quality.sources[i].type       | ```<String>```       |          | Media source type |
 | quality.sources[i].label      | ```<String>```       |          | Media source label: shown in settings menu |
-| quality.sources[i]['default'] | ```<Boolean>```      | false    | Media source to be selected by default. NOTE: this may be overriden by persistent configuration.|
-| quality.sources[i].onclick    | ```<Function>```     |          | Add an onclick hook called when user selects this quality. Returning non-true value will ignore user request. Important when, for instance, HD quality is available for logged-in users only. |
+| quality.sources[i]['default'] | ```<Boolean>```      | false    | Media source to be selected by default. NOTE: this may be overriden by persistent configuration. |
 | volume                        | ```<Object>|false``` |          | Default volume configuration. Use `false` to disable default volume control including saved persistent configuration. |
 | volume.level                  | ```<Float>```        | 1.0      | Volume level between 0.0 and 1.0. NOTE: use volume.mute instead of 0.0 if you want to disable volume level |
 | volume.mute                   | ```<Boolean>```      | false    | Volume mute |
 | show_settings_popup_on_click  | ```<Boolean>```      | false    | Select the trigger method to show settings menu: onhover (false) or onclick (true) |
+
+## Events
+| Event                         | Description |
+| ----------------------------- | ----------- |
+| beforeresolutionchange        | Fired when user clicks on a quality menu item. Use ```event.preventDefault()``` to cancel user selection (for instance when login required to view higher quality video etc). |
+| resolutionchange              | Fired when new resolution applied. Use ```player.currentSrc()``` to identify selected quality. |
