@@ -430,7 +430,9 @@ vjs.plugin('settings', function(opt){
         if (opt.quality)
         {
             var quality_key = 'vjs5_quality';
-            opt.quality.sources = sources_normalize(video.options_.sources,
+            if (opt.quality===true)
+                opt.quality = {sources: video.options_.sources};
+            opt.quality.sources = sources_normalize(opt.quality.sources,
                 local_storage_get(quality_key));
             video.on('resolutionchange', function(){
                 var sources = opt.quality.sources;
