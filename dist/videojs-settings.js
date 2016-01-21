@@ -363,13 +363,15 @@ var QualityButton = vjs.registerComponent('QualityButton',
         // additions, check https://github.com/vidcaster/video-js-resolutions
         if (player.techName_!=='Html5')
             return;
+        var event = new window.CustomEvent('beforeresolutionchange');
+        player.trigger(event, quality);
+        if (event.defaultPrevented)
+            return;
         if (player.cache_.src===quality.src)
         {
             player.trigger('resolutionchange');
             return this; // basically a no-op
         }
-        if (quality.onclick && !quality.onclick(quality))
-            return;
         var current_time = player.currentTime();
         var remain_paused = player.paused();
         player.pause();
@@ -409,12 +411,10 @@ vjs.plugin('settings', function(opt){
             {
                 if (!sources[i].label)
                     sources[i].label = sources[i].type;
-                if (!source_def && sources[i]['default'])
+                if (!source_def && sources[i]['default']!==undefined)
                     source_def = sources[i];
-                // XXX volodymyr: ignore cached quality user choice if it has
-                // an onclick hook
                 if (label_sav && label_sav==sources[i].label &&
-                    !sources[i].onclick)
+                    sources[i]['prevent-default']===undefined)
                 {
                     source_sav = sources[i];
                 }
@@ -427,10 +427,10 @@ vjs.plugin('settings', function(opt){
             }
             return sources;
         }
-        if (opt.quality&&opt.quality.sources&&opt.quality.sources.length>1)
+        if (opt.quality)
         {
             var quality_key = 'vjs5_quality';
-            opt.quality.sources = sources_normalize(opt.quality.sources,
+            opt.quality.sources = sources_normalize(video.options_.sources,
                 local_storage_get(quality_key));
             video.on('resolutionchange', function(){
                 var sources = opt.quality.sources;
