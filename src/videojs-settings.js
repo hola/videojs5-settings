@@ -299,7 +299,7 @@ vjs.registerComponent('NotifyOverlay', vjs.extend(Overlay, {
     },
 }));
 var MenuItem = vjs.getComponent('MenuItem');
-var ReportButton = vjs.registerComponent('ReportButton', vjs.extend(MenuItem, {
+vjs.registerComponent('ReportButton', vjs.extend(MenuItem, {
     constructor: function(player, options){
         MenuItem.call(this, player, options);
         var player_ = player;
@@ -313,7 +313,8 @@ var ReportButton = vjs.registerComponent('ReportButton', vjs.extend(MenuItem, {
         });
     }
 }));
-var LogButton = vjs.registerComponent('LogButton', vjs.extend(MenuItem, {
+var ReportButton = vjs.getComponent('ReportButton');
+vjs.registerComponent('LogButton', vjs.extend(MenuItem, {
     constructor: function(player, options){
         MenuItem.call(this, player, options);
         var player_ = player;
@@ -324,7 +325,8 @@ var LogButton = vjs.registerComponent('LogButton', vjs.extend(MenuItem, {
         });
     }
 }));
-var InfoButton = vjs.registerComponent('InfoButton', vjs.extend(MenuItem, {
+var LogButton = vjs.getComponent('LogButton');
+vjs.registerComponent('InfoButton', vjs.extend(MenuItem, {
     constructor: function(player, options){
         MenuItem.call(this, player, options);
         this.on('click', function(){
@@ -335,7 +337,8 @@ var InfoButton = vjs.registerComponent('InfoButton', vjs.extend(MenuItem, {
         });
     }
 }));
-var MenuLabel = vjs.registerComponent('MenuLabel', vjs.extend(Component, {
+var InfoButton = vjs.getComponent('InfoButton');
+vjs.registerComponent('MenuLabel', vjs.extend(Component, {
     createEl: function(type, props){
         var prot = Component.prototype;
         return prot.createEl.call(this, 'li', vjs_merge({
@@ -344,7 +347,8 @@ var MenuLabel = vjs.registerComponent('MenuLabel', vjs.extend(Component, {
         }, props));
     },
 }));
-var QualityButton = vjs.registerComponent('QualityButton',
+var MenuLabel = vjs.getComponent('MenuLabel');
+vjs.registerComponent('QualityButton',
     vjs.extend(MenuItem, {
     constructor: function(player, options){
         MenuItem.call(this, player, options);
@@ -392,6 +396,7 @@ var QualityButton = vjs.registerComponent('QualityButton',
         this.selected(this.player_.cache_.src === this.options_.src);
     },
 }));
+var QualityButton = vjs.getComponent('QualityButton');
 
 vjs.plugin('settings', function(opt){
     var video = this;
