@@ -73,7 +73,7 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
 }));
 var MenuButton = vjs.getComponent('MenuButton');
 vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
-    buttonText: 'Settings',
+    controlText_: 'Settings',
     className: 'vjs-settings-button',
     createItems: function(){
         this.addClass(this.className);
