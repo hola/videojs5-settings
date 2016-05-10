@@ -398,7 +398,7 @@ var QualityButton = vjs.getComponent('QualityButton');
 vjs.plugin('settings', function(opt){
     var video = this;
     if (opt===undefined||opt===true)
-        opt = {info: true, report: true, quality: true};
+        opt = {info: true, report: true, quality: false};
     opt = vjs.mergeOptions({}, opt);
     video.on('ready', function(){
         function local_storage_set(key, value){
