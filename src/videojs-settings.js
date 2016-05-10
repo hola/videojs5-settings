@@ -109,15 +109,12 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         var _this = this;
         var opt = this.options_;
         var menu = MenuButton.prototype.createMenu.call(this);
-        if (opt.show_settings_popup_on_click)
-        {
-            menu.addClass('vjs-menu-popup-on-click');
-            // videojs removes the locking state on menu item click that causes
-            // settings button to hide without updating buttonPressed state
-            menu.children().forEach(function(component){
-                component.on('click', function(){ _this.handleClick(); });
-            });
-        }
+        menu.addClass('vjs-menu-popup-on-click');
+        // videojs removes the locking state on menu item click that causes
+        // settings button to hide without updating buttonPressed state
+        menu.children().forEach(function(component){
+            component.on('click', function(){ _this.handleClick(); });
+        });
         return menu;
     },
     handleClick: function(){
@@ -400,6 +397,8 @@ var QualityButton = vjs.getComponent('QualityButton');
 
 vjs.plugin('settings', function(opt){
     var video = this;
+    if (opt===undefined||opt===true)
+        opt = {info: true, report: true, quality: true};
     opt = vjs.mergeOptions({}, opt);
     video.on('ready', function(){
         function local_storage_set(key, value){
