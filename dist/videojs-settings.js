@@ -141,7 +141,7 @@ vjs.registerComponent('Overlay', vjs.extend(Component, {
 function round(val){
     if (typeof val!='number')
         return val;
-    return Math.round(val*1000)/1000;
+    return val.toFixed(3);
 }
 var Overlay = vjs.getComponent('Overlay');
 vjs.registerComponent('InfoOverlay', vjs.extend(Overlay, {
