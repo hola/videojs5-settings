@@ -77,7 +77,7 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
     className: 'vjs-settings-button',
     createEl: function(){
         var settings_button = MenuButton.prototype.createEl.call(this);
-        var icon = document.createElement('div');
+        var icon = this.icon_ = document.createElement('div');
         icon.setAttribute('class', 'vjs-settings-icon');
         settings_button.insertBefore(icon, settings_button.firstChild);
         return settings_button;
@@ -129,6 +129,9 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
             this.unpressButton();
         else
             this.pressButton();
+    },
+    tooltipHandler: function(){
+        return this.icon_;
     },
 }));
 var Component = vjs.getComponent('Component');
@@ -352,8 +355,7 @@ vjs.registerComponent('MenuLabel', vjs.extend(Component, {
     },
 }));
 var MenuLabel = vjs.getComponent('MenuLabel');
-vjs.registerComponent('QualityButton',
-    vjs.extend(MenuItem, {
+vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
     constructor: function(player, options){
         MenuItem.call(this, player, options);
         this.player_.one('play', vjs.bind(this, this.update));
