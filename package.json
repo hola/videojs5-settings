@@ -1,6 +1,6 @@
 {
   "name": "videojs-settings",
-  "version": "0.0.2-2",
+  "version": "0.0.2-3",
   "description": "A settings button for Video.js",
   "main": "videojs-settings.js",
   "scripts": {
@@ -32,6 +32,6 @@
   },
   "dependencies": {
     "videojs-utils": "hola/videojs-utils#v0.0.1-1",
-    "videojs-hola-skin": "hola/videojs5-hola-skin"
+    "videojs-hola-skin": "hola/videojs5-hola-skin#v0.0.3-2"
   }
 }
