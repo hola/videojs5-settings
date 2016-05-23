@@ -1,6 +1,6 @@
 {
   "name": "videojs-settings",
-  "version": "0.0.2-1",
+  "version": "0.0.2-2",
   "description": "A settings button for Video.js",
   "main": "videojs-settings.js",
   "scripts": {
@@ -10,6 +10,13 @@
     "type": "git",
     "url": "git+https://github.com/hola/videojs5-settings.git"
   },
+  "files": [
+    "dist/",
+    "src/",
+    "examples/",
+    "Gruntfile.js",
+    ".jshintrc"
+  ],
   "author": "",
   "license": "Apache",
   "devDependencies": {
