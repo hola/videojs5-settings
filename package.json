@@ -4,6 +4,7 @@
   "description": "A settings button for Video.js",
   "main": "videojs-settings.js",
   "scripts": {
+    "build": "grunt",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -28,10 +29,10 @@
     "grunt-contrib-watch": "~0.4.0",
     "grunt-contrib-clean": "~0.4.0",
     "load-grunt-tasks": "~0.4.0",
-    "video.js": "hola/video.js"
+    "video.js": "hola/video.js#v5.10.2-6"
   },
   "dependencies": {
     "videojs-utils": "hola/videojs-utils#v0.0.1-1",
-    "videojs-hola-skin": "hola/videojs5-hola-skin#v0.0.3-2"
+    "videojs-hola-skin": "hola/videojs5-hola-skin#v0.0.4-1"
   }
 }

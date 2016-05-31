@@ -78,7 +78,7 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
     createEl: function(){
         var settings_button = MenuButton.prototype.createEl.call(this);
         var icon = this.icon_ = document.createElement('div');
-        icon.setAttribute('class', 'vjs-settings-icon');
+        icon.setAttribute('class', 'vjs-button-icon');
         settings_button.insertBefore(icon, settings_button.firstChild);
         return settings_button;
     },
