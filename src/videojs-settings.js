@@ -25,13 +25,15 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
         var opt_report = vjs.mergeOptions({label: 'Report playback issue'},
             opt.report);
         this.addChild(new ReportButton(player, opt_report));
-        var opt_savelog = vjs.mergeOptions({label: 'Save logs to disk'});
+        var opt_savelog = vjs.mergeOptions({label: 'Download log'});
         this.addChild(new LogButton(player,opt_savelog));
         if (opt.info)
         {
-            opt.info = vjs.mergeOptions({label: 'Technical info'}, opt.info);
+            opt.info = vjs.mergeOptions({label: 'Stats for nerds'}, opt.info);
             this.addChild(new InfoButton(player, opt.info));
         }
+        this.addChild(new MenuItemLink(player, {href: 'http://holacdn.com/player',
+            label: 'About Hola VideoJS player'}));
         player_.on('contextmenu', function(evt){
             evt.preventDefault();
             if(_this.popped)
@@ -306,6 +308,27 @@ vjs.registerComponent('NotifyOverlay', vjs.extend(Overlay, {
     },
 }));
 var MenuItem = vjs.getComponent('MenuItem');
+vjs.registerComponent('MenuItemLink', vjs.extend(MenuItem, {
+    createEl: function(type, props){
+        var prot = MenuItem.prototype;
+        var label = this.localize(this.options_['label']);
+        var el = prot.createEl.call(this, 'li', vjs_merge({
+            className: 'vjs-menu-item vjs-menu-item-link',
+            innerHTML: '',
+        }, props));
+        this.link = Component.prototype.createEl('a', {
+            className: 'vjs-menu-link',
+            innerHTML: label,
+        }, {
+            target: '_blank',
+            href: this.options_.href||'#',
+        });
+        el.appendChild(this.link);
+        return el;
+    },
+    handleClick: function(e){ e.stopPropagation(); },
+}));
+var MenuItemLink = vjs.getComponent('MenuItemLink');
 vjs.registerComponent('ReportButton', vjs.extend(MenuItem, {
     constructor: function(player, options){
         MenuItem.call(this, player, options);
