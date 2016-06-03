@@ -17,7 +17,7 @@ module.exports = function(grunt) {
     },
     concat: {
       dist: {
-        src: ['src/*.js'],
+        src: ['node_modules/clipboard/dist/clipboard.js', 'src/*.js'],
         dest: 'dist/videojs-settings.js'
       }
     },

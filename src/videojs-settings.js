@@ -27,6 +27,7 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
         this.addChild(new ReportButton(player, opt_report));
         var opt_savelog = vjs.mergeOptions({label: 'Download log'});
         this.addChild(new LogButton(player,opt_savelog));
+        this.addChild(new CopyLogButton(player, {label: 'Copy debug info'}));
         if (opt.info)
         {
             opt.info = vjs.mergeOptions({label: 'Stats for nerds'}, opt.info);
@@ -356,6 +357,25 @@ vjs.registerComponent('LogButton', vjs.extend(MenuItem, {
     }
 }));
 var LogButton = vjs.getComponent('LogButton');
+var Clipboard = window.Clipboard;
+vjs.registerComponent('CopyLogButton', vjs.extend(MenuItem, {
+    constructor: function(player, options){
+        MenuItem.call(this, player, options);
+        var player_ = player;
+        this.clipboard = new Clipboard(this.el_, {
+            text: function(){
+                if (!player_.hola_logs)
+                    return 'Can\'t find hola_logs method!';
+                return player_.hola_logs();
+            },
+        });
+    },
+    dispose: function(){
+        this.clipboard.destroy();
+        MenuItem.prototype.dispose.call(this);
+    },
+}));
+var CopyLogButton = vjs.getComponent('CopyLogButton');
 vjs.registerComponent('InfoButton', vjs.extend(MenuItem, {
     constructor: function(player, options){
         MenuItem.call(this, player, options);

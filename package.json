@@ -29,9 +29,10 @@
     "grunt-contrib-watch": "~0.4.0",
     "grunt-contrib-clean": "~0.4.0",
     "load-grunt-tasks": "~0.4.0",
-    "video.js": "hola/video.js#v5.10.2-6"
+    "video.js": "hola/video.js#v5.10.2-7"
   },
   "dependencies": {
+    "clipboard": "^1.5.10",
     "videojs-utils": "hola/videojs-utils#v0.0.1-1",
     "videojs-hola-skin": "hola/videojs5-hola-skin#v0.0.4-11"
   }
