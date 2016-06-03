@@ -32,7 +32,7 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
             opt.info = vjs.mergeOptions({label: 'Stats for nerds'}, opt.info);
             this.addChild(new InfoButton(player, opt.info));
         }
-        this.addChild(new MenuItemLink(player, {href: 'http://holacdn.com/player',
+        this.addChild(new MenuItemLink(player, {href: 'https://holacdn.com/player',
             label: 'About Hola VideoJS player'}));
         player_.on('contextmenu', function(evt){
             evt.preventDefault();
