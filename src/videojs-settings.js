@@ -47,10 +47,12 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
                 _this.show();
                 var oX = evt.offsetX;
                 var oY = evt.offsetY;
-                if (_this.el_.offsetWidth+oX>player_.el_.offsetWidth)
-                    oX = oX-_this.el_.offsetWidth;
-                if (_this.el_.offsetHeight+oY>player_.el_.offsetHeight)
-                    oY = oY-_this.el_.offsetHeight;
+                var left_pos = oX-_this.el_.offsetWidth;
+                if (_this.el_.offsetWidth+oX>player_.el_.offsetWidth && left_pos>0)
+                    oX = left_pos;
+                var top_pos = oY-_this.el_.offsetHeight;
+                if (_this.el_.offsetHeight+oY>player_.el_.offsetHeight && top_pos>0)
+                    oY = top_pos;
                 _this.el_.style.top=oY+'px';
                 _this.el_.style.left=oX+'px';
                 _this.popped = true;
