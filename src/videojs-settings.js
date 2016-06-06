@@ -22,6 +22,7 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
         this.hide();
         var _this = this;
         var opt = this.options_;
+        var offset = opt.offset||5;
         var opt_report = vjs.mergeOptions({label: 'Report playback issue'},
             opt.report);
         this.addChild(new ReportButton(player, opt_report));
@@ -47,12 +48,12 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
                 _this.show();
                 var oX = evt.offsetX;
                 var oY = evt.offsetY;
-                var left_pos = oX-_this.el_.offsetWidth;
-                if (_this.el_.offsetWidth+oX>player_.el_.offsetWidth && left_pos>0)
-                    oX = left_pos;
-                var top_pos = oY-_this.el_.offsetHeight;
-                if (_this.el_.offsetHeight+oY>player_.el_.offsetHeight && top_pos>0)
-                    oY = top_pos;
+                var left_shift = _this.el_.offsetWidth+oX+offset-player_.el_.offsetWidth;
+                left_shift = Math.max(0, left_shift);
+                var top_shift = _this.el_.offsetHeight+oY+offset-player_.el_.offsetHeight;
+                top_shift = Math.max(0, top_shift);
+                oX = oX-left_shift;
+                oY = oY-top_shift;
                 _this.el_.style.top=oY+'px';
                 _this.el_.style.left=oX+'px';
                 _this.popped = true;
