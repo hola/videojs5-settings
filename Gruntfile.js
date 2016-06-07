@@ -15,6 +15,13 @@ module.exports = function(grunt) {
       },
       all: ['src/*.js']
     },
+    less: {
+      all: {
+        files: {
+          'dist/videojs-settings.css': ['src/*.less']
+        }
+      }
+    },
     concat: {
       dist: {
         src: ['node_modules/clipboard/dist/clipboard.js', 'src/*.js'],
@@ -36,6 +43,6 @@ module.exports = function(grunt) {
   require('load-grunt-tasks')(grunt);
 
   // Default task.
-  grunt.registerTask('default', ['jshint', 'concat', 'uglify']);
+  grunt.registerTask('default', ['jshint', 'less', 'concat', 'uglify']);
 
 };
