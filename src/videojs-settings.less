@@ -1,5 +1,6 @@
 @import url('variables.less');
 @import url('utils.less');
+@done-glyph: ~'data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjRkZGRkZGIiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4gICAgPHBhdGggZD0iTTAgMGgyNHYyNEgweiIgZmlsbD0ibm9uZSIvPiAgICA8cGF0aCBkPSJNOSAxNi4yTDQuOCAxMmwtMS40IDEuNEw5IDE5IDIxIDdsLTEuNC0xLjRMOSAxNi4yeiIvPjwvc3ZnPg==';
 
 .vjs5-hola-skin {
     .vjs-rightclick-popup {
@@ -7,6 +8,7 @@
         z-index: 2;
     }
     .vjs-settings-button {
+        order: 6;
         &>.vjs-button-icon {
             @cog-width: @control-width - 1em;
             height: 100%;
@@ -20,7 +22,19 @@
         &:hover>.vjs-button-icon {
             opacity: 1;
         }
-        order: 6;
+        .vjs-menu {
+            width: 9em;
+            left: -2.5em;
+            &>.vjs-menu-content {
+                bottom: 2.8em;
+                padding: 0.5em 0;
+                .background-color-with-alpha(@control-bg-color, @control-bg-alpha);
+                cursor: default;
+            }
+        }
+        .vjs-menu-item {
+            cursor: pointer;
+        }
     }
     .vjs-info-overlay {
         position: absolute;
@@ -105,6 +119,20 @@
         .vjs-menu-item,
         .vjs-menu-item>.vjs-menu-link {
             padding: 0.2em 1em;
+        }
+    }
+
+    .vjs-menu-item.vjs-selected {
+        padding: 0.3em 0 0.2em 2em;
+        color: #fff;
+        background: transparent no-repeat;
+        background-position: 0.5em center;
+        background-size: 1em;
+        background-image: url(@done-glyph);
+        &:hover {
+            //@control-bg-hover: #73859f;
+            color: #fff;
+            .background-color-with-alpha(#73859f, @control-bg-alpha);
         }
     }
 

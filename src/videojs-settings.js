@@ -80,7 +80,6 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
 var MenuButton = vjs.getComponent('MenuButton');
 vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
     controlText_: 'Settings',
-    className: 'vjs-settings-button',
     createEl: function(){
         var settings_button = MenuButton.prototype.createEl.call(this);
         var icon = this.icon_ = document.createElement('div');
@@ -88,33 +87,23 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         settings_button.insertBefore(icon, settings_button.firstChild);
         return settings_button;
     },
+    buildCSSClass: function(){
+        var className = MenuButton.prototype.buildCSSClass.call(this);
+        return className+' vjs-settings-button';
+    },
     createItems: function(){
-        this.addClass(this.className);
         var items = [];
         var player = this.player_;
-        var opt = this.options_;
-        if (opt.info)
+        var quality = this.options_.quality;
+        var sources = quality && quality.sources ? quality.sources :
+            player.options_.sources;
+        if (!sources || !sources.length)
+            return [];
+        for (var i=0; i<sources.length; i+=1)
         {
-            opt.info = vjs.mergeOptions({label: 'Technical info'}, opt.info);
-            items.push(new InfoButton(player, opt.info));
-        }
-        if (opt.report)
-        {
-            opt.report = vjs.mergeOptions({label: 'Report playback issue'},
-                opt.report);
-            items.push(new ReportButton(player, opt.report));
-        }
-        var quality = opt.quality;
-        var sources = quality && quality.sources ? quality.sources : null;
-        if (sources && sources.length>1)
-        {
-            items.push(new MenuLabel(player, {label: 'Quality'}));
-            for (var i=0; i<sources.length; i+=1)
-            {
-                var item = new QualityButton(player, sources[i]);
-                item.addClass('vjs-menu-indent');
-                items.push(item);
-            }
+            items.push(new QualityButton(player, vjs_merge({
+                label: sources.length==1 ? 'Default' : 'Source '+(i+1)
+            }, sources[i])));
         }
         return items;
     },
@@ -403,6 +392,7 @@ vjs.registerComponent('MenuLabel', vjs.extend(Component, {
 var MenuLabel = vjs.getComponent('MenuLabel');
 vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
     constructor: function(player, options){
+        options = vjs_merge({selectable: true}, options);
         MenuItem.call(this, player, options);
         this.player_.one('play', vjs.bind(this, this.update));
         this.player_.on('resolutionchange', vjs.bind(this, this.update));
