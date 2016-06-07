@@ -402,6 +402,12 @@ vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
             this.update();
         }
     },
+    is_current_src: function(){
+        var player = this.player_;
+        var current_src = player.hola_url ? player.hola_url() :
+            player.cache_.src;
+        return this.options_.src==current_src;
+    },
     handleClick: function(){
         var player = this.player_;
         var quality = this.options_;
@@ -413,7 +419,7 @@ vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
         player.trigger(event, quality);
         if (event.defaultPrevented)
             return;
-        if (player.cache_.src===quality.src)
+        if (this.is_current_src())
         {
             player.trigger('resolutionchange');
             return this; // basically a no-op
@@ -435,7 +441,7 @@ vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
         });
     },
     update: function(){
-        this.selected(this.player_.cache_.src === this.options_.src);
+        this.selected(this.is_current_src());
     },
 }));
 var QualityButton = vjs.getComponent('QualityButton');
