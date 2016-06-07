@@ -404,8 +404,12 @@ vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
     },
     is_current_src: function(){
         var player = this.player_;
-        var current_src = player.hola_url ? player.hola_url() :
-            player.cache_.src;
+        var current_src = player.cache_.src;
+        var hola = window.hola_cdn;
+        var hola_player = hola && hola.get_player ? hola.get_player() : null;
+        // in case of hola_cdn attached get origin video url insteab of blob
+        if (hola_player && hola_player.vjs===player)
+            current_src = hola_player.get_url();
         return this.options_.src==current_src;
     },
     handleClick: function(){
