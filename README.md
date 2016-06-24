@@ -66,8 +66,9 @@ The following configuration options are supported by this plugin:
 | quality.sources[i].label      | ```<String>```       |          | Media source label: shown in settings menu |
 | quality.sources[i]['default'] | ```<Boolean>```      | false    | Media source to be selected by default. NOTE: this may be overriden by persistent configuration. |
 | volume                        | ```<Object>|false``` |          | Default volume configuration. Use `false` to disable default volume control including saved persistent configuration. |
-| volume.level                  | ```<Float>```        | 1.0      | Volume level between 0.0 and 1.0. NOTE: use volume.mute instead of 0.0 if you want to disable volume level |
-| volume.mute                   | ```<Boolean>```      | false    | Volume mute |
+| volume.level                  | ```<Float>```        | 1.0      | Volume level between 0.0 and 1.0. NOTE: use volume.mute instead of 0.0 if you want to disable volume level. NOTE: this may be overriden by persisten configuration, use ```volume.override_local_storage = true``` to force defined configuration. |
+| volume.mute                   | ```<Boolean>```      | false    | Volume mute. NOTE: this may be overriden by persisten configuration, use ```volume.override_local_storage = true``` to force defined configuration. |
+| volume.override_local_storage | ```<Boolean>```      | false    | Set to ```true``` if you want to force volume configuration and ignore user choice saved in persistent configuration |
 | show_settings_popup_on_click  | ```<Boolean>```      | false    | Select the trigger method to show settings menu: onhover (false) or onclick (true) |
 
 ## Events
