@@ -526,17 +526,22 @@ vjs.plugin('settings', function(opt){
         if (opt.volume||opt.volume===undefined)
         {
             var volume_key = 'vjs5_volume', mute_key = 'vjs5_mute';
+            var volume = vjs.mergeOptions({level: 1, mute: false}, opt.volume);
             // quality configuration above might have reset the source
             // thus make sure video is ready before changing the volume
             video.ready(function(){
-                var volume = local_storage_get(volume_key);
-                var mute = local_storage_get(mute_key);
-                var defaults = vjs.mergeOptions({level: 1, mute: false},
-                    opt.volume);
-                video.volume(volume!=null ? volume : defaults.level);
-                video.muted(mute!=null ? mute==='true' : defaults.mute);
+                if (!volume.override_local_storage)
+                {
+                    var ls_level, ls_mute;
+                    if ((ls_level = local_storage_get(volume_key))!=null)
+                        volume.level = ls_level;
+                    if ((ls_mute = local_storage_get(mute_key))!=null)
+                        volume.mute = ls_mute;
+                }
+                video.volume(volume.level);
+                video.muted(volume.mute);
             });
-            video.on('volumechange', function() {
+            video.on('volumechange', function(){
                 local_storage_set(volume_key, video.volume());
                 local_storage_set(mute_key, video.muted());
             });
