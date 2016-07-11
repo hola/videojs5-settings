@@ -12,17 +12,18 @@
     .vjs-settings-button {
         order: 6;
         &>.vjs-button-icon {
-            @cog-width: @control-width - 1em;
+            @cog-width: @control-width - 1.3em;
             height: 100%;
             width: @cog-width;
             background: url(@cog-glyph) no-repeat;
             background-size: @cog-width;
             background-position: center;
             opacity: 0.7;
-            transition: opacity 200ms ease;
+            transition: opacity 200ms ease, transform 200ms ease;
         }
         &:hover>.vjs-button-icon {
             opacity: 1;
+            transform: rotate(90deg);
         }
         .vjs-menu {
             width: 9em;
