@@ -40,19 +40,20 @@
             cursor: pointer;
         }
     }
+    .vjs-info-overlay,
+    .vjs-rightclick-popup {
+        .border-radius();
+        .background-color-with-alpha(@control-bg-color, @control-bg-alpha);
+        .box-shadow(0.2em 0.2em 0.3em rgba(0, 0, 0, 0.5));
+    }
     .vjs-info-overlay {
         position: absolute;
         top: 1em;
         left: 1em;
         z-index: 3;
         display: inline-block;
-        padding: 10px;
-        border: 1px solid #072832;
-        border-color: rgba(7, 40, 50, 0.5);
+        padding: 1em;
         font-size: 1.2em;
-        .border-radius();
-        .background-color-with-alpha(@control-bg-color, @control-bg-alpha);
-        .box-shadow(-0.2em -0.2em 0.3em rgba(255, 255, 255, 0.2));
         &.vjs-notify-overlay {
             bottom: 50%;
             top: auto;
@@ -115,8 +116,6 @@
         width: auto;
         padding: 1em 0;
         font-size: 100% * @context-menu-scale;
-        .background-color-with-alpha(@control-bg-color, @control-bg-alpha);
-        .box-shadow(0.2em 0.2em 0.3em rgba(0, 0, 0, 0.5));
         .vjs-menu-item {
             cursor: pointer;
         }
