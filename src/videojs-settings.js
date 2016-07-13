@@ -122,10 +122,17 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         return menu;
     },
     handleClick: function(){
+        var expanded_classname = 'vjs-settings-expanded';
         if (this.buttonPressed_)
+        {
+            this.player_.removeClass(expanded_classname);
             this.unpressButton();
+        }
         else
+        {
+            this.player_.addClass(expanded_classname);
             this.pressButton();
+        }
     },
     tooltipHandler: function(){
         return this.icon_;
