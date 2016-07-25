@@ -18,9 +18,9 @@
             padding: 0 ((@control-width+(@control-padding*2))-@cog-width)/2;
             background: url(@cog-glyph) no-repeat;
             background-size: @cog-width;
-            background-position: center;
+            background-position: center center;
             opacity: 0.7;
-            transform-origin: center @cog-width * 0.91;
+            transform-origin: @cog-width * 1.088 @cog-width * 0.91;
             transition: opacity 200ms ease, transform 200ms ease;
         }
         &:hover>.vjs-button-icon {
