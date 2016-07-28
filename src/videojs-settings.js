@@ -103,7 +103,7 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         for (var i=0; i<sources.length; i+=1)
         {
             label = sources[i].label || (sources.length==1 ?
-                'Default' : ('Source '+(i+1)));
+                'Auto' : ('Source '+(i+1)));
             items.push(new QualityButton(player, vjs_merge(sources[i], {
                 label: label})));
         }
