@@ -10,6 +10,12 @@ var vjs_merge = function(obj1, obj2){
     }
     return obj1;
 };
+var settings_icon_svg = '<svg height="100%" width="100%" viewBox="0 0 16 16">'
+        +'<path class="st0" d="M16,9.4V6.6h-2.2c-0.2-0.6-0.4-1.3-0.8-1.8l1.5-1.5l-1.9-1.9l-1.5,1.5C10.6,2.6,10,2.3,9.4,2.2V0H6.6v2.2'
+        +'C6,2.3,5.4,2.6,4.8,2.9L3.3,1.4L1.4,3.3l1.5,1.5C2.6,5.4,2.3,6,2.2,6.6H0v2.7h2.2c0.2,0.6,0.4,1.3,0.8,1.8l-1.5,1.5l1.9,1.9l1.5-1.5'
+        +'c0.5,0.3,1.2,0.6,1.8,0.8V16h2.7v-2.2c0.6-0.2,1.3-0.4,1.8-0.8l1.5,1.5l1.9-1.9l-1.5-1.5c0.3-0.5,0.6-1.2,0.8-1.8H16z M8,11'
+        +'c-1.7,0-3-1.3-3-3s1.3-3,3-3s3,1.3,3,3S9.7,11,8,11z"/>'
+    +'</svg>';
 var info_overlay, notify_overlay, popup_menu;
 var Menu = vjs.getComponent('Menu');
 vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
@@ -84,6 +90,7 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         var settings_button = MenuButton.prototype.createEl.call(this);
         var icon = this.icon_ = document.createElement('div');
         icon.setAttribute('class', 'vjs-button-icon');
+        icon.innerHTML = settings_icon_svg;
         settings_button.insertBefore(icon, settings_button.firstChild);
         return settings_button;
     },
