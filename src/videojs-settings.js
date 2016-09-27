@@ -33,12 +33,17 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
             opt.report);
         this.addChild(new ReportButton(player, opt_report));
         var opt_savelog = vjs.mergeOptions({label: 'Download log'});
-        this.addChild(new LogButton(player,opt_savelog));
+        this.addChild(new LogButton(player, opt_savelog));
         this.addChild(new CopyLogButton(player, {label: 'Copy debug info'}));
         if (opt.info)
         {
             opt.info = vjs.mergeOptions({label: 'Stats for nerds'}, opt.info);
             this.addChild(new InfoButton(player, opt.info));
+        }
+        if (opt.graph)
+        {
+            opt.graph = vjs.mergeOptions({label: 'CDN overlay'}, opt.graph);
+            this.addChild(new GraphButton(player, opt.graph));
         }
         this.addChild(new MenuItemLink(player, {href: 'https://holacdn.com/player',
             label: 'About Hola VideoJS player'}));
@@ -365,6 +370,18 @@ vjs.registerComponent('LogButton', vjs.extend(MenuItem, {
     }
 }));
 var LogButton = vjs.getComponent('LogButton');
+vjs.registerComponent('GraphButton', vjs.extend(MenuItem, {
+    constructor: function(player, options){
+        MenuItem.call(this, player, options);
+        var player_ = player;
+        this.on('click', function(){
+            // XXX michaelg: won't work without cdn
+            player_.trigger({type: 'cdn_graph_overlay'});
+            this.selected(false);
+        });
+    }
+}));
+var GraphButton = vjs.getComponent('GraphButton');
 var Clipboard = window.Clipboard;
 vjs.registerComponent('CopyLogButton', vjs.extend(MenuItem, {
     constructor: function(player, options){
