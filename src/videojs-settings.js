@@ -16,7 +16,7 @@ var settings_icon_svg = '<svg height="100%" width="100%" viewBox="0 0 16 16">'
         +'c0.5,0.3,1.2,0.6,1.8,0.8V16h2.7v-2.2c0.6-0.2,1.3-0.4,1.8-0.8l1.5,1.5l1.9-1.9l-1.5-1.5c0.3-0.5,0.6-1.2,0.8-1.8H16z M8,11'
         +'c-1.7,0-3-1.3-3-3s1.3-3,3-3s3,1.3,3,3S9.7,11,8,11z"/>'
     +'</svg>';
-var info_overlay, notify_overlay, popup_menu;
+var info_overlay, notify_overlay;
 var Menu = vjs.getComponent('Menu');
 vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
     className: 'vjs-rightclick-popup',
@@ -29,12 +29,14 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
         var _this = this;
         var opt = this.options_;
         var offset = opt.offset||5;
-        var opt_report = vjs.mergeOptions({label: 'Report playback issue'},
-            opt.report);
-        this.addChild(new ReportButton(player, opt_report));
-        var opt_savelog = vjs.mergeOptions({label: 'Download log'});
-        this.addChild(new LogButton(player, opt_savelog));
+        this.addChild(new LogButton(player, {label: 'Download log'}));
         this.addChild(new CopyLogButton(player, {label: 'Copy debug info'}));
+        if (opt.report)
+        {
+            opt.report = vjs.mergeOptions({label: 'Report playback issue'},
+                opt.report);
+            this.addChild(new ReportButton(player, opt.report));
+        }
         if (opt.info)
         {
             opt.info = vjs.mergeOptions({label: 'Stats for nerds'}, opt.info);
@@ -45,11 +47,13 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
             opt.graph = vjs.mergeOptions({label: 'CDN overlay'}, opt.graph);
             this.addChild(new GraphButton(player, opt.graph));
         }
-        this.addChild(new MenuItemLink(player, {href: 'https://holacdn.com/player',
-            label: 'About Hola VideoJS player'}));
+        this.addChild(new MenuItemLink(player, {
+            href: 'https://holacdn.com/player',
+            label: 'About Hola VideoJS player',
+        }));
         player_.on('contextmenu', function(evt){
             evt.preventDefault();
-            if(_this.popped)
+            if (_this.popped)
             {
                 _this.hide();
                 _this.popped = false;
@@ -59,9 +63,11 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
                 _this.show();
                 var oX = evt.offsetX;
                 var oY = evt.offsetY;
-                var left_shift = _this.el_.offsetWidth+oX+offset-player_.el_.offsetWidth;
+                var left_shift =
+                    _this.el_.offsetWidth+oX+offset-player_.el_.offsetWidth;
                 left_shift = Math.max(0, left_shift);
-                var top_shift = _this.el_.offsetHeight+oY+offset-player_.el_.offsetHeight;
+                var top_shift =
+                    _this.el_.offsetHeight+oY+offset-player_.el_.offsetHeight;
                 top_shift = Math.max(0, top_shift);
                 oX = oX-left_shift;
                 oY = oY-top_shift;
@@ -350,8 +356,6 @@ vjs.registerComponent('ReportButton', vjs.extend(MenuItem, {
         this.on('click', function(){
             // XXX alexeym: make it work without cdn
             player_.trigger({type: 'problem_report'});
-            if (!notify_overlay)
-                return;
             notify_overlay.flash();
             this.selected(false);
         });
@@ -488,7 +492,7 @@ vjs.plugin('settings', function(opt){
     if (opt===undefined||opt===true)
         opt = {info: true, report: true, quality: false};
     opt = vjs.mergeOptions({}, opt);
-    video.on('ready', function(){
+    video.ready(function(){
         function local_storage_set(key, value){
             try { vjs.utils.localStorage.setItem(key, value); } catch(e){}
         }
@@ -537,8 +541,7 @@ vjs.plugin('settings', function(opt){
                 }
             });
         }
-        if (opt.info||opt.report||
-            (opt.quality&&opt.quality.sources&&opt.quality.sources.length))
+        if (opt.quality && opt.quality.sources && opt.quality.sources.length)
         {
             video.controlBar.addChild('SettingsButton',
                 vjs.mergeOptions({}, opt));
@@ -554,7 +557,7 @@ vjs.plugin('settings', function(opt){
                 {'class': 'vjs-notify-overlay'});
             notify_overlay.addClass('vjs-hidden');
         }
-        if (opt.volume||opt.volume===undefined)
+        if (opt.volume || opt.volume===undefined)
         {
             var volume_key = 'vjs5_volume', mute_key = 'vjs5_mute';
             var volume = vjs.mergeOptions({level: 1, mute: false}, opt.volume);
@@ -577,8 +580,7 @@ vjs.plugin('settings', function(opt){
                 local_storage_set(mute_key, video.muted());
             });
         }
-        popup_menu = video.addChild('PopupMenu',
-            vjs.mergeOptions({}, opt));
+        video.addChild('PopupMenu', vjs.mergeOptions({}, opt));
     });
 });
 
