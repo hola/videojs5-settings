@@ -1,11 +1,15 @@
 {
-  "name": "videojs-settings",
-  "version": "0.0.3-24",
+  "name": "@hola.org/videojs-settings",
+  "version": "0.0.3-26",
   "description": "A settings button for Video.js",
   "main": "videojs-settings.js",
   "scripts": {
     "build": "grunt",
-    "release": "grunt release",
+    "login": "c=`npm c ls`; test \"${c#*@hola}\" != \"$c\" || npm login --scope @hola.org",
+    "release": "run-s build login release:*",
+    "release:tag": "git tag v$npm_package_version",
+    "release:publish": "npm publish",
+    "release:pushtags": "git push --tags origin",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -30,13 +34,13 @@
     "grunt-contrib-uglify": "~0.2.0",
     "grunt-contrib-watch": "~0.4.0",
     "grunt-contrib-clean": "~0.4.0",
-    "grunt-shell": "^1.3.0",
     "load-grunt-tasks": "~0.4.0",
-    "video.js": "hola/video.js#v5.10.2-7"
+    "npm-run-all": "^3.1.0",
+    "@hola.org/video.js": ">=5.10.2-16 <5.10.2"
   },
   "dependencies": {
     "clipboard": "^1.5.10",
-    "videojs-utils": "hola/videojs-utils#v0.0.1-1",
-    "videojs-hola-skin": "hola/videojs5-hola-skin#v0.0.5-24"
+    "@hola.org/videojs-utils": ">=0.0.1-2 <0.0.1",
+    "@hola.org/videojs-hola-skin": ">=0.0.5-30 <0.0.5"
   }
 }
