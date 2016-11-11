@@ -1,6 +1,6 @@
 {
   "name": "@hola.org/videojs-settings",
-  "version": "0.0.3-26",
+  "version": "0.0.3-27",
   "description": "A settings button for Video.js",
   "main": "videojs-settings.js",
   "scripts": {

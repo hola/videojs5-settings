@@ -570,7 +570,7 @@ vjs.plugin('settings', function(opt){
                     if ((ls_level = local_storage_get(volume_key))!=null)
                         volume.level = ls_level;
                     if ((ls_mute = local_storage_get(mute_key))!=null)
-                        volume.mute = ls_mute;
+                        volume.mute = ls_mute=='true';
                 }
                 video.volume(volume.level);
                 video.muted(volume.mute);
