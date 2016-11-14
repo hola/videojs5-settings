@@ -155,6 +155,20 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
     tooltipHandler: function(){
         return this.icon_;
     },
+    updateQuality: function(data){
+        var sources = [];
+        var callback = data.callback;
+        var current = data.quality.current;
+        var selected = data.quality.selected;
+        data.quality.list.forEach(function(item){
+            var item_selected = selected==-1 ? item.id==-1 : item.id==current;
+            sources.push({level_id: item.id, label: item.label,
+                callback: callback, selected: item_selected});
+        });
+        this.options_.quality = this.options_.quality||{};
+        this.options_.quality.sources = sources;
+        this.update();
+    }
 }));
 var Component = vjs.getComponent('Component');
 vjs.registerComponent('Overlay', vjs.extend(Component, {
@@ -434,10 +448,8 @@ vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
         this.player_.one('play', vjs.bind(this, this.update));
         this.player_.on('resolutionchange', vjs.bind(this, this.update));
         if (options['default'])
-        {
             this.player_.src(options.src);
-            this.update();
-        }
+        this.update();
     },
     is_current_src: function(){
         var player = this.player_;
@@ -460,6 +472,14 @@ vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
         player.trigger(event, quality);
         if (event.defaultPrevented)
             return;
+        var level_id = this.options_.level_id;
+        if (!this.options_.src && level_id!==undefined)
+        {
+            if (this.options_.callback)
+                this.options_.callback(level_id);
+            player.trigger('resolutionchange');
+            return this;
+        }
         if (this.is_current_src())
         {
             player.trigger('resolutionchange');
@@ -482,7 +502,10 @@ vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
         });
     },
     update: function(){
-        this.selected(this.is_current_src());
+        if (this.options_.src)
+            this.selected(this.is_current_src());
+        else
+            this.selected(this.options_.selected);
     },
 }));
 var QualityButton = vjs.getComponent('QualityButton');
@@ -523,7 +546,12 @@ vjs.plugin('settings', function(opt){
             }
             return sources;
         }
-        if (opt.quality)
+        function add_settings_button(){
+            return video.controlBar.addChild('SettingsButton',
+                vjs.mergeOptions({}, opt));
+        }
+        var is_hls_provider = video.tech_.hlsProvider;
+        if (opt.quality && !is_hls_provider)
         {
             var quality_key = 'vjs5_quality';
             if (opt.quality===true)
@@ -541,10 +569,16 @@ vjs.plugin('settings', function(opt){
                 }
             });
         }
+        var settings_button;
         if (opt.quality && opt.quality.sources && opt.quality.sources.length)
+            settings_button = add_settings_button();
+        if (opt.quality && is_hls_provider)
         {
-            video.controlBar.addChild('SettingsButton',
-                vjs.mergeOptions({}, opt));
+            video.tech_.on('loadedqualitydata', function(e, data){
+                if (!settings_button)
+                    settings_button = add_settings_button();
+                settings_button.updateQuality(data);
+            });
         }
         if (opt.info)
         {
