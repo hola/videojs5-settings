@@ -1,5 +1,6 @@
 (function(window, vjs){
 'use strict';
+var Clipboard = require('clipboard');
 // XXX michaelg remove when vjs5.1 exposes this interface
 var vjs_merge = function(obj1, obj2){
     if (!obj2) { return obj1; }
@@ -400,7 +401,6 @@ vjs.registerComponent('GraphButton', vjs.extend(MenuItem, {
     }
 }));
 var GraphButton = vjs.getComponent('GraphButton');
-var Clipboard = window.Clipboard;
 vjs.registerComponent('CopyLogButton', vjs.extend(MenuItem, {
     constructor: function(player, options){
         MenuItem.call(this, player, options);
