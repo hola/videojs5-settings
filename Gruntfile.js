@@ -34,6 +34,12 @@ module.exports = function(grunt) {
         dest: 'dist/videojs-settings.js'
       }
     },
+    derequire: {
+      dist: {
+        src: 'dist/videojs-settings.js',
+        dest: 'dist/videojs-settings.js',
+      }
+    },
     uglify : {
       all : {
         files: {
@@ -48,8 +54,16 @@ module.exports = function(grunt) {
   // Load Grunt tasks.
   require('load-grunt-tasks')(grunt);
 
-  grunt.registerTask('build', ['jshint', 'less', 'concat', 'uglify']);
+  grunt.registerMultiTask('derequire', function(){
+    var derequire = require('derequire');
+    this.files.forEach(function(file){
+        var out = derequire(grunt.file.read(file.src[0]));
+        grunt.file.write(file.dest, out);
+        grunt.log.ok('derequired '+file.src[0].cyan);
+    });
+  });
+  grunt.registerTask('build',
+      ['jshint', 'less', 'concat', 'derequire', 'uglify']);
   // Default task.
   grunt.registerTask('default', ['build']);
-
 };
