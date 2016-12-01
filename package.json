@@ -2,7 +2,8 @@
   "name": "@hola.org/videojs-settings",
   "version": "0.0.3-28",
   "description": "A settings button for Video.js",
-  "main": "videojs-settings.js",
+  "main": "dist/videojs-settings.js",
+  "style": "dist/videojs-settings.css",
   "scripts": {
     "build": "grunt",
     "login": "c=`npm c ls`; test \"${c#*@hola}\" != \"$c\" || npm login --scope @hola.org",
