@@ -1,5 +1,6 @@
 (function(window, vjs){
 'use strict';
+require('@hola.org/videojs-utils');
 var Clipboard = require('clipboard');
 // XXX michaelg remove when vjs5.1 exposes this interface
 var vjs_merge = function(obj1, obj2){
