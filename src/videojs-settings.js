@@ -51,7 +51,7 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
         }
         this.addChild(new MenuItemLink(player, {
             href: 'https://holacdn.com/player',
-            label: 'About Hola VideoJS player',
+            label: 'About Hola Player',
         }));
         player_.on('contextmenu', function(evt){
             evt.preventDefault();
