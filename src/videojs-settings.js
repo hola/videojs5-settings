@@ -160,12 +160,13 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
     updateQuality: function(data){
         var sources = [];
         var callback = data.callback;
-        var current = data.quality.current;
+        // XXX bahaa/alexeym: highlight 'current' somehow especially if
+        // selected==-1
+        //var current = data.quality.current;
         var selected = data.quality.selected;
         data.quality.list.forEach(function(item){
-            var item_selected = selected==-1 ? item.id==-1 : item.id==current;
             sources.push({level_id: item.id, label: item.label,
-                callback: callback, selected: item_selected});
+                callback: callback, selected: item.id==selected});
         });
         this.options_.quality = this.options_.quality||{};
         this.options_.quality.sources = sources;
@@ -462,16 +463,17 @@ vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
     handleClick: function(){
         var player = this.player_;
         var quality = this.options_;
-        // XXX volodymyr: implemented for html5 only, flash requires extra
-        // additions, check https://github.com/vidcaster/video-js-resolutions
-        if (player.techName_!=='Html5')
+        var level_id = this.options_.level_id;
+        // XXX volodymyr: implemented for html5 and adaptive only, flash
+        // requires extra additions, check
+        // https://github.com/vidcaster/video-js-resolutions
+        if (player.techName_!=='Html5' && level_id===undefined)
             return;
         var event = new window.CustomEvent('beforeresolutionchange');
         player.trigger(event, quality);
         if (event.defaultPrevented)
             return;
-        var level_id = this.options_.level_id;
-        if (!this.options_.src && level_id!==undefined)
+        if (level_id!==undefined)
         {
             if (this.options_.callback)
                 this.options_.callback(level_id);
@@ -548,7 +550,8 @@ vjs.plugin('settings', function(opt){
             return video.controlBar.addChild('SettingsButton',
                 vjs.mergeOptions({}, opt));
         }
-        var is_hls_provider = video.tech_.hlsProvider;
+        // XXX bahaa/alexeym: make it an opt instead of detecting provider
+        var is_hls_provider = video.tech_.flashlsProvider||video.tech_.hlsProvider;
         if (opt.quality && !is_hls_provider)
         {
             var quality_key = 'vjs5_quality';
