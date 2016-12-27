@@ -250,10 +250,7 @@ vjs.registerComponent('InfoOverlay', vjs.extend(Overlay, {
             className: 'vjs-info-overlay-title',
             innerHTML: 'Technical info',
         });
-        var close_btn = create_el('div', {
-            className: 'vjs-info-overlay-x',
-            innerHTML: '\u274c',
-        });
+        var close_btn = create_el('div', {className: 'vjs-info-overlay-x'});
         close_btn.addEventListener('click', function(evt){
             if (!info_overlay)
                 return;
