@@ -76,6 +76,7 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
                 _this.el_.style.top=oY+'px';
                 _this.el_.style.left=oX+'px';
                 _this.popped = true;
+                _this.check_items();
             }
         });
         player_.on('click', function(evt){
@@ -94,7 +95,13 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
                 _this.popped = false;
             });
         });
-    }
+    },
+    check_items: function(){
+        this.children().forEach(function(item){
+            if (item.is_visible)
+                item.toggleClass('vjs-hidden', !item.is_visible());
+        });
+    },
 }));
 var MenuButton = vjs.getComponent('MenuButton');
 vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
@@ -191,6 +198,10 @@ function round(val){
     if (typeof val!='number')
         return val;
     return val.toFixed(3);
+}
+function is_wrapper_attached(check_bws){
+    var hola = window.hola_cdn;
+    return hola && hola.get_wrapper() && (!check_bws || !!hola._get_bws());
 }
 var Overlay = vjs.getComponent('Overlay');
 vjs.registerComponent('InfoOverlay', vjs.extend(Overlay, {
@@ -345,7 +356,7 @@ var MenuItem = vjs.getComponent('MenuItem');
 vjs.registerComponent('MenuItemLink', vjs.extend(MenuItem, {
     createEl: function(type, props){
         var prot = MenuItem.prototype;
-        var label = this.localize(this.options_['label']);
+        var label = this.localize(this.options_.label);
         var el = prot.createEl.call(this, 'li', vjs_merge({
             className: 'vjs-menu-item vjs-menu-item-link',
             innerHTML: '',
@@ -368,12 +379,12 @@ vjs.registerComponent('ReportButton', vjs.extend(MenuItem, {
         MenuItem.call(this, player, options);
         var player_ = player;
         this.on('click', function(){
-            // XXX alexeym: make it work without cdn
             player_.trigger({type: 'problem_report'});
             notify_overlay.flash();
             this.selected(false);
         });
-    }
+    },
+    is_visible: is_wrapper_attached,
 }));
 var ReportButton = vjs.getComponent('ReportButton');
 vjs.registerComponent('LogButton', vjs.extend(MenuItem, {
@@ -381,11 +392,11 @@ vjs.registerComponent('LogButton', vjs.extend(MenuItem, {
         MenuItem.call(this, player, options);
         var player_ = player;
         this.on('click', function(){
-            // XXX alexeym: make it work without cdn
             player_.trigger({type: 'save_logs'});
             this.selected(false);
         });
-    }
+    },
+    is_visible: is_wrapper_attached,
 }));
 var LogButton = vjs.getComponent('LogButton');
 vjs.registerComponent('GraphButton', vjs.extend(MenuItem, {
@@ -393,11 +404,11 @@ vjs.registerComponent('GraphButton', vjs.extend(MenuItem, {
         MenuItem.call(this, player, options);
         var player_ = player;
         this.on('click', function(){
-            // XXX michaelg: won't work without cdn
             player_.trigger({type: 'cdn_graph_overlay'});
             this.selected(false);
         });
-    }
+    },
+    is_visible: is_wrapper_attached.bind(null, true),
 }));
 var GraphButton = vjs.getComponent('GraphButton');
 vjs.registerComponent('CopyLogButton', vjs.extend(MenuItem, {
@@ -416,6 +427,7 @@ vjs.registerComponent('CopyLogButton', vjs.extend(MenuItem, {
         this.clipboard.destroy();
         MenuItem.prototype.dispose.call(this);
     },
+    is_visible: is_wrapper_attached,
 }));
 var CopyLogButton = vjs.getComponent('CopyLogButton');
 vjs.registerComponent('InfoButton', vjs.extend(MenuItem, {
@@ -615,7 +627,9 @@ vjs.plugin('settings', function(opt){
                 local_storage_set(mute_key, video.muted());
             });
         }
-        video.addChild('PopupMenu', vjs.mergeOptions({}, opt));
+        var menu = video.addChild('PopupMenu', vjs.mergeOptions({}, opt));
+        video.on('hola.wrapper_attached', menu.check_items.bind(menu));
+        video.on('hola.wrapper_detached', menu.check_items.bind(menu));
     });
 });
 
