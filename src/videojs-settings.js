@@ -562,7 +562,8 @@ vjs.plugin('settings', function(opt){
                 vjs.mergeOptions({}, opt));
         }
         // XXX bahaa/alexeym: make it an opt instead of detecting provider
-        var is_hls_provider = video.tech_.flashlsProvider||video.tech_.hlsProvider;
+        var is_hls_provider =
+            video.tech_.flashlsProvider||video.tech_.hlsProvider;
         if (opt.quality && !is_hls_provider)
         {
             var quality_key = 'vjs5_quality';
@@ -582,11 +583,14 @@ vjs.plugin('settings', function(opt){
             });
         }
         var settings_button;
-        if (opt.quality && opt.quality.sources && opt.quality.sources.length)
+        if (opt.quality && opt.quality.sources && opt.quality.sources.length>1)
             settings_button = add_settings_button();
         if (opt.quality && is_hls_provider)
         {
             video.tech_.on('loadedqualitydata', function(e, data){
+                var sources = data && data.quality && data.quality.list || [];
+                if (sources.length<2)
+                    return;
                 if (!settings_button)
                     settings_button = add_settings_button();
                 settings_button.updateQuality(data);
