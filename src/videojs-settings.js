@@ -18,7 +18,6 @@ var settings_icon_svg = '<svg height="100%" width="100%" viewBox="0 0 16 16">'
         +'c0.5,0.3,1.2,0.6,1.8,0.8V16h2.7v-2.2c0.6-0.2,1.3-0.4,1.8-0.8l1.5,1.5l1.9-1.9l-1.5-1.5c0.3-0.5,0.6-1.2,0.8-1.8H16z M8,11'
         +'c-1.7,0-3-1.3-3-3s1.3-3,3-3s3,1.3,3,3S9.7,11,8,11z"/>'
     +'</svg>';
-var info_overlay, notify_overlay;
 var Menu = vjs.getComponent('Menu');
 vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
     className: 'vjs-rightclick-popup',
@@ -205,50 +204,53 @@ function is_wrapper_attached(check_bws){
 }
 var Overlay = vjs.getComponent('Overlay');
 vjs.registerComponent('InfoOverlay', vjs.extend(Overlay, {
-    info_data: {
-        duration: {
-            units: 'sec',
-            title: 'Duration',
-            get: function(p){ return round(p.duration()); },
-        },
-        position: {
-            units: 'sec',
-            title: 'Position',
-            get: function(p){
-                return round(p.currentTime());
+    constructor: function(player, options){
+        this.info_data = {
+            duration: {
+                units: 'sec',
+                title: 'Duration',
+                get: function(p){ return round(p.duration()); },
             },
-        },
-        buffered: {
-            units: 'sec',
-            title: 'Current buffer',
-            get: function(p){
-                var range = p.buffered();
-                var pos = p.currentTime();
-                if (range && range.length)
-                {
-                    for (var i=0; i<range.length; i+=1)
+            position: {
+                units: 'sec',
+                title: 'Position',
+                get: function(p){
+                    return round(p.currentTime());
+                },
+            },
+            buffered: {
+                units: 'sec',
+                title: 'Current buffer',
+                get: function(p){
+                    var range = p.buffered();
+                    var pos = p.currentTime();
+                    if (range && range.length)
                     {
-                        if (range.start(i)<=pos && range.end(i)>=pos)
-                            return round(range.end(i)-pos);
+                        for (var i=0; i<range.length; i+=1)
+                        {
+                            if (range.start(i)<=pos && range.end(i)>=pos)
+                                return round(range.end(i)-pos);
+                        }
                     }
-                }
-                return '--';
+                    return '--';
+                },
             },
-        },
-        downloaded: {
-            units: 'sec',
-            title: 'Downloaded',
-            get: function(p){
-                var range = p.buffered();
-                var buf_sec = 0;
-                if (range && range.length)
-                {
-                    for (var i=0; i<range.length; i+=1)
-                        buf_sec += range.end(i)-range.start(i);
-                }
-                return round(buf_sec);
+            downloaded: {
+                units: 'sec',
+                title: 'Downloaded',
+                get: function(p){
+                    var range = p.buffered();
+                    var buf_sec = 0;
+                    if (range && range.length)
+                    {
+                        for (var i=0; i<range.length; i+=1)
+                            buf_sec += range.end(i)-range.start(i);
+                    }
+                    return round(buf_sec);
+                },
             },
-        },
+        };
+        Overlay.call(this, player, options);
     },
     createContent: function(container){
         var _this = this;
@@ -263,11 +265,7 @@ vjs.registerComponent('InfoOverlay', vjs.extend(Overlay, {
             innerHTML: 'Technical info',
         });
         var close_btn = create_el('div', {className: 'vjs-info-overlay-x'});
-        close_btn.addEventListener('click', function(evt){
-            if (!info_overlay)
-                return;
-            info_overlay.toggle();
-        });
+        close_btn.addEventListener('click', function(){ _this.toggle(); });
         var content = create_el('div', {
             className: 'vjs-info-overlay-content'});
         var list = create_el('ul', {className: 'vjs-info-overlay-list'});
@@ -380,7 +378,9 @@ vjs.registerComponent('ReportButton', vjs.extend(MenuItem, {
         var player_ = player;
         this.on('click', function(){
             player_.trigger({type: 'problem_report'});
-            notify_overlay.flash();
+            var overlay;
+            if (overlay = player.getChild('NotifyOverlay'))
+                overlay.flash();
             this.selected(false);
         });
     },
@@ -434,10 +434,9 @@ vjs.registerComponent('InfoButton', vjs.extend(MenuItem, {
     constructor: function(player, options){
         MenuItem.call(this, player, options);
         this.on('click', function(){
-            // XXX alexeym/michaelg: use vjs api to get overlay object
-            if (!info_overlay)
-                return;
-            info_overlay.toggle(this);
+            var overlay;
+            if (overlay = player.getChild('InfoOverlay'))
+                overlay.toggle(this);
         });
     }
 }));
@@ -595,14 +594,13 @@ vjs.plugin('settings', function(opt){
         }
         if (opt.info)
         {
-            info_overlay = video.addChild('InfoOverlay', {});
-            info_overlay.addClass('vjs-hidden');
+            video.addChild('InfoOverlay', {})
+            .addClass('vjs-hidden');
         }
         if (opt.report)
         {
-            notify_overlay = video.addChild('NotifyOverlay',
-                {'class': 'vjs-notify-overlay'});
-            notify_overlay.addClass('vjs-hidden');
+            video.addChild('NotifyOverlay', {'class': 'vjs-notify-overlay'})
+            .addClass('vjs-hidden');
         }
         if (opt.volume || opt.volume===undefined)
         {
