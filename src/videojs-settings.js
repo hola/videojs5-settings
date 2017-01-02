@@ -105,6 +105,12 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
 var MenuButton = vjs.getComponent('MenuButton');
 vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
     controlText_: 'Settings',
+    constructor: function(player, options){
+        MenuButton.call(this, player, options);
+        player.one('play', vjs.bind(this, this.updateSelected));
+        player.on('resolutionchange', vjs.bind(this, this.updateSelected));
+        this.updateSelected();
+    },
     createEl: function(){
         var settings_button = MenuButton.prototype.createEl.call(this);
         var icon = this.icon_ = document.createElement('div');
@@ -137,7 +143,6 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
     },
     createMenu: function(){
         var _this = this;
-        var opt = this.options_;
         var menu = MenuButton.prototype.createMenu.call(this);
         menu.addClass('vjs-menu-popup-on-click');
         // videojs removes the locking state on menu item click that causes
@@ -163,20 +168,45 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
     tooltipHandler: function(){
         return this.icon_;
     },
+    updateSelected: function(){
+        var selected = this.selectedLevel;
+        this.menu.children().forEach(function(item){
+            if (item.options_.src)
+                item.selected(item.is_current_src());
+            else
+                item.selected(item.options_.level_id==selected);
+        });
+    },
+    levelsChanged: function(levels){
+        var current = (this.options_.quality||{}).sources||[];
+        if (current.length!=levels.length)
+            return true;
+        for (var i=0; i<levels.length; i++)
+        {
+            if (current[i].level_id!=levels[i].id)
+                return true;
+        }
+        return false;
+    },
     updateQuality: function(data){
         var sources = [];
         var callback = data.callback;
+        var levels = data.quality.list;
         // XXX bahaa/alexeym: highlight 'current' somehow especially if
         // selected==-1
-        //var current = data.quality.current;
-        var selected = data.quality.selected;
-        data.quality.list.forEach(function(item){
-            sources.push({level_id: item.id, label: item.label,
-                callback: callback, selected: item.id==selected});
-        });
-        this.options_.quality = this.options_.quality||{};
-        this.options_.quality.sources = sources;
-        this.update();
+        // var current = data.quality.current;
+        this.selectedLevel = data.quality.selected;
+        if (this.levelsChanged(levels))
+        {
+            levels.forEach(function(item){
+                sources.push({level_id: item.id, label: item.label,
+                    callback: callback});
+            });
+            this.options_.quality = this.options_.quality||{};
+            this.options_.quality.sources = sources;
+            this.update();
+        }
+        this.updateSelected();
     }
 }));
 var Component = vjs.getComponent('Component');
@@ -455,11 +485,8 @@ vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
     constructor: function(player, options){
         options = vjs_merge({selectable: true}, options);
         MenuItem.call(this, player, options);
-        this.player_.one('play', vjs.bind(this, this.update));
-        this.player_.on('resolutionchange', vjs.bind(this, this.update));
         if (options['default'])
             this.player_.src(options.src);
-        this.update();
     },
     is_current_src: function(){
         var player = this.player_;
@@ -511,12 +538,6 @@ vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
                 player.play();
             }
         });
-    },
-    update: function(){
-        if (this.options_.src)
-            this.selected(this.is_current_src());
-        else
-            this.selected(this.options_.selected);
     },
 }));
 var QualityButton = vjs.getComponent('QualityButton');
