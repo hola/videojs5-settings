@@ -502,11 +502,6 @@ vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
         var player = this.player_;
         var quality = this.options_;
         var level_id = this.options_.level_id;
-        // XXX volodymyr: implemented for html5 and adaptive only, flash
-        // requires extra additions, check
-        // https://github.com/vidcaster/video-js-resolutions
-        if (player.techName_!=='Html5' && level_id===undefined)
-            return;
         var event = new window.CustomEvent('beforeresolutionchange');
         player.trigger(event, quality);
         if (event.defaultPrevented)
@@ -529,6 +524,12 @@ vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
         player.src(quality.src);
         player.ready(function(){
             player.one('loadeddata', vjs.bind(this, function(){
+                // XXX andrey: videojs-swf bug, sometimes it doesn't
+                // trigger seeked event
+                player.one('playing', function(){
+                    if (player.seeking())
+                        player.tech_.trigger('seeked');
+                });
                 this.currentTime(current_time);
             }));
             player.trigger('resolutionchange');
