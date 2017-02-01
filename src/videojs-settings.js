@@ -517,27 +517,21 @@ vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
         player.pause();
         player.src(quality.src);
         player.ready(function(){
-            player.one('loadeddata', function on_timeupdate(){
-                // XXX andrey: videojs-swf bug, sometimes it doesn't
-                // trigger seeked event
-                player.one('playing', function(){
-                    if (player.seeking())
-                        player.tech_.trigger('seeked');
-                });
+            player.one('loadeddata', function(){
                 if (player.techName_=='Html5')
-                    player.currentTime(current_time);
-                else
                 {
-                    // XXX andrey: if seek immediately, video can stuck
-                    // or play without sound, probably loadeddata is triggered
-                    // when flash NetStream is not ready to seek yet
-                    player.on('timeupdate', function on_timeupdate(){
-                        if (!player.currentTime())
-                            return;
-                        player.off('timeupdate', on_timeupdate);
-                        player.currentTime(current_time);
-                    });
+                    player.currentTime(current_time);
+                    return;
                 }
+                // XXX andrey: if seek immediately, video can stuck
+                // or play without sound, probably loadeddata is triggered
+                // when flash NetStream is not ready to seek yet
+                player.on('timeupdate', function on_timeupdate(){
+                    if (!player.currentTime())
+                        return;
+                    player.off('timeupdate', on_timeupdate);
+                    player.currentTime(current_time);
+                });
             });
             player.trigger('resolutionchange');
             if (!remain_paused)
