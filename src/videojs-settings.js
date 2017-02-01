@@ -169,12 +169,19 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         return this.icon_;
     },
     updateSelected: function(){
-        var selected = this.selectedLevel;
+        var current_level = this.selectedLevel;
+        var player = this.player_;
+        var current_src = player.cache_.src;
+        var hola = window.hola_cdn;
+        var wrapper = hola && hola.wrapper && hola.wrapper.find(function(w){
+            return w.player && w.player.vjs==player;
+        });
+        // in case of hola_cdn attached get origin video url instead of blob
+        if (wrapper && wrapper.player)
+            current_src = wrapper.player.get_url();
         this.menu.children().forEach(function(item){
-            if (item.options_.src)
-                item.selected(item.is_current_src());
-            else
-                item.selected(item.options_.level_id==selected);
+            item.selected(item.options_.src ? item.options_.src==current_src :
+                item.options_.level_id==current_level);
         });
     },
     levelsChanged: function(levels){
@@ -488,35 +495,22 @@ vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
         if (options['default'])
             this.player_.src(options.src);
     },
-    is_current_src: function(){
-        var player = this.player_;
-        var current_src = player.cache_.src;
-        var hola = window.hola_cdn;
-        var hola_player = hola && hola.get_player ? hola.get_player() : null;
-        // in case of hola_cdn attached get origin video url insteab of blob
-        if (hola_player && hola_player.vjs===player)
-            current_src = hola_player.get_url();
-        return this.options_.src==current_src;
-    },
     handleClick: function(){
+        if (this.hasClass('vjs-selected'))
+            return;
         var player = this.player_;
         var quality = this.options_;
-        var level_id = this.options_.level_id;
+        var level_id = quality.level_id;
         var event = new window.CustomEvent('beforeresolutionchange');
         player.trigger(event, quality);
         if (event.defaultPrevented)
             return;
         if (level_id!==undefined)
         {
-            if (this.options_.callback)
-                this.options_.callback(level_id);
+            if (quality.callback)
+                quality.callback(level_id);
             player.trigger('resolutionchange');
-            return this;
-        }
-        if (this.is_current_src())
-        {
-            player.trigger('resolutionchange');
-            return this; // basically a no-op
+            return;
         }
         var current_time = player.currentTime();
         var remain_paused = player.paused();
