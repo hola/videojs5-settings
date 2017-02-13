@@ -585,8 +585,8 @@ vjs.plugin('settings', function(opt){
                 vjs.mergeOptions({}, opt));
         }
         // XXX bahaa/alexeym: make it an opt instead of detecting provider
-        var is_hls_provider =
-            video.tech_.flashlsProvider||video.tech_.hlsProvider;
+        var is_hls_provider = video.tech_ &&
+            (video.tech_.flashlsProvider||video.tech_.hlsProvider);
         if (opt.quality && !is_hls_provider)
         {
             var quality_key = 'vjs5_quality';
