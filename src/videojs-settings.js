@@ -550,7 +550,7 @@ vjs.plugin('settings', function(opt){
         volume: {level: 1, mute: !!video.options_.muted},
         debugging: true,
         about: true,
-    }, opt)
+    }, opt);
     video.ready(function(){
         function local_storage_set(key, value){
             try { vjs.utils.localStorage.setItem(key, value); } catch(e){}
