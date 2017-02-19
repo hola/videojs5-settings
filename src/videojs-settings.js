@@ -610,10 +610,7 @@ vjs.plugin('settings', function(opt){
             });
         }
         if (opt.info)
-        {
-            video.addChild('InfoOverlay', {})
-            .addClass('vjs-hidden');
-        }
+            video.addChild('InfoOverlay', {}).addClass('vjs-hidden');
         if (opt.report)
         {
             video.addChild('NotifyOverlay', {'class': 'vjs-notify-overlay'})
