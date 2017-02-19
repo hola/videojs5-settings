@@ -538,7 +538,7 @@ vjs.plugin('settings', function(opt){
     var video = this;
     if (opt===undefined||opt===true)
         opt = {info: true, report: true, quality: false};
-    opt = vjs.mergeOptions({}, opt);
+    opt = vjs.mergeOptions(opt);
     video.ready(function(){
         function local_storage_set(key, value){
             try { vjs.utils.localStorage.setItem(key, value); } catch(e){}
@@ -572,7 +572,7 @@ vjs.plugin('settings', function(opt){
         }
         function add_settings_button(){
             return video.controlBar.addChild('SettingsButton',
-                vjs.mergeOptions({}, opt));
+                vjs.mergeOptions(opt));
         }
         // XXX bahaa/alexeym: make it an opt instead of detecting provider
         var is_hls_provider = video.tech_ &&
@@ -642,7 +642,7 @@ vjs.plugin('settings', function(opt){
                 local_storage_set(mute_key, video.muted());
             });
         }
-        var menu = video.addChild('PopupMenu', vjs.mergeOptions({}, opt));
+        var menu = video.addChild('PopupMenu', vjs.mergeOptions(opt));
         video.on('hola.wrapper_attached', menu.check_items.bind(menu));
         video.on('hola.wrapper_detached', menu.check_items.bind(menu));
     });
