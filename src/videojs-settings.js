@@ -622,7 +622,8 @@ vjs.plugin('settings', function(opt){
         if (opt.volume!==false)
         {
             var volume_key = 'vjs5_volume', mute_key = 'vjs5_mute';
-            var volume = vjs.mergeOptions({level: 1, mute: false}, opt.volume);
+            var volume = vjs.mergeOptions(
+                {level: 1, mute: !!video.options_.muted}, opt.volume);
             // quality configuration above might have reset the source
             // thus make sure video is ready before changing the volume
             video.ready(function(){
