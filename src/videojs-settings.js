@@ -2,16 +2,6 @@
 'use strict';
 require('@hola.org/videojs-utils');
 var Clipboard = require('clipboard');
-// XXX michaelg remove when vjs5.1 exposes this interface
-var vjs_merge = function(obj1, obj2){
-    if (!obj2) { return obj1; }
-    for (var key in obj2){
-        if (Object.prototype.hasOwnProperty.call(obj2, key)) {
-            obj1[key] = obj2[key];
-        }
-    }
-    return obj1;
-};
 var settings_icon_svg = '<svg height="100%" width="100%" viewBox="0 0 16 16">'
         +'<path class="st0" d="M16,9.4V6.6h-2.2c-0.2-0.6-0.4-1.3-0.8-1.8l1.5-1.5l-1.9-1.9l-1.5,1.5C10.6,2.6,10,2.3,9.4,2.2V0H6.6v2.2'
         +'C6,2.3,5.4,2.6,4.8,2.9L3.3,1.4L1.4,3.3l1.5,1.5C2.6,5.4,2.3,6,2.2,6.6H0v2.7h2.2c0.2,0.6,0.4,1.3,0.8,1.8l-1.5,1.5l1.9,1.9l1.5-1.5'
@@ -136,8 +126,8 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         {
             label = sources[i].label || (sources.length==1 ?
                 'Auto' : ('Source '+(i+1)));
-            items.push(new QualityButton(player, vjs_merge(sources[i], {
-                label: label})));
+            items.push(new QualityButton(player,
+                vjs.mergeOptions(sources[i], {label: label})));
         }
         return items;
     },
@@ -222,9 +212,9 @@ vjs.registerComponent('Overlay', vjs.extend(Component, {
         var custom_class = this.options_['class'];
         custom_class = custom_class ? ' '+custom_class : '';
         var proto_component = Component.prototype;
-        var container = proto_component.createEl.call(this, 'div', vjs_merge({
-            className: 'vjs-info-overlay'+custom_class,
-        }, props));
+        var container = proto_component.createEl.call(this, 'div',
+            vjs.mergeOptions({className: 'vjs-info-overlay'+custom_class},
+            props));
         this.createContent(container);
         return container;
     },
@@ -293,7 +283,7 @@ vjs.registerComponent('InfoOverlay', vjs.extend(Overlay, {
         var _this = this;
         var player = this.player_;
         function create_el(el, opt){
-            opt = opt ? vjs_merge(opt) : opt;
+            opt = opt ? vjs.mergeOptions(opt) : opt;
             var proto_component = Component.prototype;
             return proto_component.createEl.call(_this, el, opt);
         }
@@ -356,7 +346,7 @@ vjs.registerComponent('NotifyOverlay', vjs.extend(Overlay, {
     createContent: function(container){
         var _this = this;
         function create_el(el, opt){
-            opt = opt ? vjs_merge(opt) : opt;
+            opt = opt ? vjs.mergeOptions(opt) : opt;
             var proto_component = Component.prototype;
             return proto_component.createEl.call(_this, el, opt);
         }
@@ -392,7 +382,7 @@ vjs.registerComponent('MenuItemLink', vjs.extend(MenuItem, {
     createEl: function(type, props){
         var prot = MenuItem.prototype;
         var label = this.localize(this.options_.label);
-        var el = prot.createEl.call(this, 'li', vjs_merge({
+        var el = prot.createEl.call(this, 'li', vjs.mergeOptions({
             className: 'vjs-menu-item vjs-menu-item-link',
             innerHTML: '',
         }, props));
@@ -481,7 +471,7 @@ var InfoButton = vjs.getComponent('InfoButton');
 vjs.registerComponent('MenuLabel', vjs.extend(Component, {
     createEl: function(type, props){
         var prot = Component.prototype;
-        return prot.createEl.call(this, 'li', vjs_merge({
+        return prot.createEl.call(this, 'li', vjs.mergeOptions({
             className: 'vjs-menu-item vjs-menu-label',
             innerHTML: this.options_.label,
         }, props));
@@ -490,7 +480,7 @@ vjs.registerComponent('MenuLabel', vjs.extend(Component, {
 var MenuLabel = vjs.getComponent('MenuLabel');
 vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
     constructor: function(player, options){
-        options = vjs_merge({selectable: true}, options);
+        options = vjs.mergeOptions({selectable: true}, options);
         MenuItem.call(this, player, options);
         if (options['default'])
             this.player_.src(options.src);
