@@ -20,8 +20,12 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
         var _this = this;
         var opt = this.options_;
         var offset = opt.offset||5;
-        this.addChild(new LogButton(player, {label: 'Download log'}));
-        this.addChild(new CopyLogButton(player, {label: 'Copy debug info'}));
+        if (opt.debugging)
+        {
+            this.addChild(new LogButton(player, {label: 'Download log'}));
+            this.addChild(
+                new CopyLogButton(player, {label: 'Copy debug info'}));
+        }
         if (opt.report)
         {
             opt.report = vjs.mergeOptions({label: 'Report playback issue'},
@@ -38,10 +42,13 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
             opt.graph = vjs.mergeOptions({label: 'CDN overlay'}, opt.graph);
             this.addChild(new GraphButton(player, opt.graph));
         }
-        this.addChild(new MenuItemLink(player, {
-            href: 'https://holacdn.com/player',
-            label: 'About Hola Player',
-        }));
+        if (opt.about)
+        {
+            this.addChild(new MenuItemLink(player, {
+                href: 'https://holacdn.com/player',
+                label: 'About Hola Player',
+            }));
+        }
         player_.on('contextmenu', function(evt){
             evt.preventDefault();
             if (_this.popped)
@@ -536,9 +543,14 @@ var QualityButton = vjs.getComponent('QualityButton');
 
 vjs.plugin('settings', function(opt){
     var video = this;
-    if (opt===undefined||opt===true)
-        opt = {info: true, report: true, quality: false};
-    opt = vjs.mergeOptions(opt);
+    opt = vjs.mergeOptions({
+        info: true,
+        report: true,
+        quality: false,
+        volume: {level: 1, mute: !!video.options_.muted},
+        debugging: true,
+        about: true,
+    }, opt)
     video.ready(function(){
         function local_storage_set(key, value){
             try { vjs.utils.localStorage.setItem(key, value); } catch(e){}
@@ -616,24 +628,22 @@ vjs.plugin('settings', function(opt){
             video.addChild('NotifyOverlay', {'class': 'vjs-notify-overlay'})
             .addClass('vjs-hidden');
         }
-        if (opt.volume!==false)
+        if (opt.volume)
         {
             var volume_key = 'vjs5_volume', mute_key = 'vjs5_mute';
-            var volume = vjs.mergeOptions(
-                {level: 1, mute: !!video.options_.muted}, opt.volume);
             // quality configuration above might have reset the source
             // thus make sure video is ready before changing the volume
             video.ready(function(){
-                if (!volume.override_local_storage)
+                if (!opt.volume.override_local_storage)
                 {
                     var ls_level, ls_mute;
                     if ((ls_level = local_storage_get(volume_key))!=null)
-                        volume.level = ls_level;
+                        opt.volume.level = ls_level;
                     if ((ls_mute = local_storage_get(mute_key))!=null)
-                        volume.mute = ls_mute=='true';
+                        opt.volume.mute = ls_mute=='true';
                 }
-                video.volume(volume.level);
-                video.muted(volume.mute);
+                video.volume(opt.volume.level);
+                video.muted(opt.volume.mute);
             });
             video.on('volumechange', function(){
                 local_storage_set(volume_key, video.volume());
