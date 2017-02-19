@@ -619,7 +619,7 @@ vjs.plugin('settings', function(opt){
             video.addChild('NotifyOverlay', {'class': 'vjs-notify-overlay'})
             .addClass('vjs-hidden');
         }
-        if (opt.volume || opt.volume===undefined)
+        if (opt.volume!==false)
         {
             var volume_key = 'vjs5_volume', mute_key = 'vjs5_mute';
             var volume = vjs.mergeOptions({level: 1, mute: false}, opt.volume);
