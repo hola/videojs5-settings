@@ -589,11 +589,11 @@ vjs.plugin('settings', function(opt){
         // XXX bahaa/alexeym: make it an opt instead of detecting provider
         var is_hls_provider = video.tech_ &&
             (video.tech_.flashlsProvider||video.tech_.hlsProvider);
+        if (opt.quality===true)
+            opt.quality = {sources: video.options_.sources};
         if (opt.quality && !is_hls_provider)
         {
             var quality_key = 'vjs5_quality';
-            if (opt.quality===true)
-                opt.quality = {sources: video.options_.sources};
             opt.quality.sources = sources_normalize(opt.quality.sources,
                 local_storage_get(quality_key));
             video.on('resolutionchange', function(){
