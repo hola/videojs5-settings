@@ -498,7 +498,13 @@ vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
         var player = this.player_;
         var quality = this.options_;
         var level_id = quality.level_id;
-        var event = new window.CustomEvent('beforeresolutionchange');
+        var event, event_name = 'beforeresolutionchange';
+        try { event = new window.CustomEvent(event_name); }
+        catch(e){
+            // XXX stanislav: IE 11 fix
+            event = document.createEvent('CustomEvent');
+            event.initCustomEvent(event_name, true, true, {});
+        }
         player.trigger(event, quality);
         if (event.defaultPrevented)
             return;
