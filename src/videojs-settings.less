@@ -35,6 +35,9 @@
             left: -2.5em;
             z-index: 15;
             &>.vjs-menu-content {
+                white-space: nowrap;
+                width: auto;
+                min-width: 9em;
                 max-height: none;
                 bottom: 2.75em;
                 padding: 0.5em 0;
@@ -44,8 +47,12 @@
             }
         }
         .vjs-menu-item {
-            padding: 0.3em 0 0.2em 2em;
+            padding: 0.3em 0.4em 0.2em 2em;
             cursor: pointer;
+            span {
+                color: @text-color-minor;
+                font-size: 90%;
+            }
         }
     }
 
@@ -97,9 +104,9 @@
         &:hover {
             color: @text-color-main;
         }
-	&:after {
-	    content: '\00274c';
-	}
+        &:after {
+            content: '\00274c';
+        }
     }
     .vjs-notify-overlay-title {
         margin-bottom: 1em;

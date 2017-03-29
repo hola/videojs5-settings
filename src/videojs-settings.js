@@ -166,7 +166,7 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         return this.icon_;
     },
     updateSelected: function(){
-        var current_level = this.selectedLevel;
+        var _this = this;
         var player = this.player_;
         var current_src = player.cache_.src;
         var hola = window.hola_cdn;
@@ -176,10 +176,24 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         // in case of hola_cdn attached get origin video url instead of blob
         if (wrapper && wrapper.player)
             current_src = wrapper.player.get_url();
-        this.menu.children().forEach(function(item){
+        var items = this.menu.children();
+        items.forEach(function(item){
             item.selected(item.options_.src ? item.options_.src==current_src :
-                item.options_.level_id==current_level);
+                item.options_.level_id==_this.selectedLevel);
         });
+        if (this.selectedLevel!==undefined)
+        {
+            var auto = items.find(function(item){
+                return item.options_.level_id==-1;
+            });
+            if (!auto)
+                return;
+            var levels = (this.options_.quality||{}).sources||[];
+            var curLevel = this.currentLevel!==undefined && levels.find(
+                function(l){ return l.level_id==_this.currentLevel; });
+            auto.setMinorText(this.selectedLevel==-1 && curLevel ?
+                curLevel.label : '');
+        }
     },
     levelsChanged: function(levels){
         var current = (this.options_.quality||{}).sources||[];
@@ -196,10 +210,8 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         var sources = [];
         var callback = data.callback;
         var levels = data.quality.list;
-        // XXX bahaa/alexeym: highlight 'current' somehow especially if
-        // selected==-1
-        // var current = data.quality.current;
         this.selectedLevel = data.quality.selected;
+        this.currentLevel = data.quality.current;
         if (this.levelsChanged(levels))
         {
             levels.forEach(function(item){
@@ -543,6 +555,15 @@ vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
                 player.play();
             }
         });
+    },
+    createEl: function(){
+        var el = MenuItem.prototype.createEl.apply(this, arguments);
+        this.minorLabel = document.createElement('span');
+        el.appendChild(this.minorLabel);
+        return el;
+    },
+    setMinorText: function(label){
+        this.minorLabel.innerHTML = label ? ' '+label : '';
     },
 }));
 var QualityButton = vjs.getComponent('QualityButton');
