@@ -75,7 +75,7 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
                 _this.check_items();
             }
         });
-        player_.on('click', function(evt){
+        player_.on(['tap', 'click'], function(evt){
             if (_this.popped)
             {
                 _this.hide();
@@ -86,7 +86,7 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
             }
         });
         this.children().forEach(function(item){
-            item.on('click', function(evt){
+            item.on(['tap', 'click'], function(evt){
                 _this.hide();
                 _this.popped = false;
             });
@@ -311,7 +311,9 @@ vjs.registerComponent('InfoOverlay', vjs.extend(Overlay, {
             innerHTML: 'Technical info',
         });
         var close_btn = create_el('div', {className: 'vjs-info-overlay-x'});
-        close_btn.addEventListener('click', function(){ _this.toggle(); });
+        var close = this.toggle.bind(this, null, true);
+        close_btn.addEventListener('click', close);
+        close_btn.addEventListener('touchend', close);
         var content = create_el('div', {
             className: 'vjs-info-overlay-content'});
         var list = create_el('ul', {className: 'vjs-info-overlay-list'});
@@ -345,10 +347,10 @@ vjs.registerComponent('InfoOverlay', vjs.extend(Overlay, {
         for (var i in info)
             info[i].el.innerHTML = info[i].get(player);
     },
-    toggle: function(caller){
+    toggle: function(caller, hide){
         if (caller)
             this.last_caller = caller;
-        if (this.visible)
+        if (this.visible||hide)
         {
             this.visible = false;
             if (this.last_caller)
@@ -413,48 +415,38 @@ vjs.registerComponent('MenuItemLink', vjs.extend(MenuItem, {
             href: this.options_.href||'#',
         });
         el.appendChild(this.link);
+        this.link.addEventListener('touchstart', function(e){
+            e.stopPropagation(); });
         return el;
     },
     handleClick: function(e){ e.stopPropagation(); },
 }));
 var MenuItemLink = vjs.getComponent('MenuItemLink');
 vjs.registerComponent('ReportButton', vjs.extend(MenuItem, {
-    constructor: function(player, options){
-        MenuItem.call(this, player, options);
-        var player_ = player;
-        this.on('click', function(){
-            player_.trigger({type: 'problem_report'});
-            var overlay;
-            if (overlay = player.getChild('NotifyOverlay'))
-                overlay.flash();
-            this.selected(false);
-        });
-    },
     is_visible: is_wrapper_attached,
+    handleClick: function(){
+        this.player_.trigger({type: 'problem_report'});
+        var overlay;
+        if (overlay = this.player_.getChild('NotifyOverlay'))
+            overlay.flash();
+        this.selected(false);
+    },
 }));
 var ReportButton = vjs.getComponent('ReportButton');
 vjs.registerComponent('LogButton', vjs.extend(MenuItem, {
-    constructor: function(player, options){
-        MenuItem.call(this, player, options);
-        var player_ = player;
-        this.on('click', function(){
-            player_.trigger({type: 'save_logs'});
-            this.selected(false);
-        });
-    },
     is_visible: is_wrapper_attached,
+    handleClick: function(){
+        this.player_.trigger({type: 'save_logs'});
+        this.selected(false);
+    },
 }));
 var LogButton = vjs.getComponent('LogButton');
 vjs.registerComponent('GraphButton', vjs.extend(MenuItem, {
-    constructor: function(player, options){
-        MenuItem.call(this, player, options);
-        var player_ = player;
-        this.on('click', function(){
-            player_.trigger({type: 'cdn_graph_overlay'});
-            this.selected(false);
-        });
-    },
     is_visible: is_wrapper_attached.bind(null, true),
+    handleClick: function(){
+        this.player_.trigger({type: 'cdn_graph_overlay'});
+        this.selected(false);
+    },
 }));
 var GraphButton = vjs.getComponent('GraphButton');
 vjs.registerComponent('CopyLogButton', vjs.extend(MenuItem, {
@@ -468,6 +460,9 @@ vjs.registerComponent('CopyLogButton', vjs.extend(MenuItem, {
                 return player_.hola_logs();
             },
         });
+        this.on('tap', function(e){
+            this.clipboard.onClick({currentTarget: e.target});
+        });
     },
     dispose: function(){
         this.clipboard.destroy();
@@ -477,14 +472,11 @@ vjs.registerComponent('CopyLogButton', vjs.extend(MenuItem, {
 }));
 var CopyLogButton = vjs.getComponent('CopyLogButton');
 vjs.registerComponent('InfoButton', vjs.extend(MenuItem, {
-    constructor: function(player, options){
-        MenuItem.call(this, player, options);
-        this.on('click', function(){
-            var overlay;
-            if (overlay = player.getChild('InfoOverlay'))
-                overlay.toggle(this);
-        });
-    }
+    handleClick: function(){
+        var overlay;
+        if (overlay = this.player_.getChild('InfoOverlay'))
+            overlay.toggle(this);
+    },
 }));
 var InfoButton = vjs.getComponent('InfoButton');
 vjs.registerComponent('MenuLabel', vjs.extend(Component, {
@@ -613,6 +605,7 @@ vjs.plugin('settings', function(opt){
             return video.controlBar.addChild('SettingsButton',
                 vjs.mergeOptions(opt));
         }
+        video.emitTapEvents();
         // XXX bahaa/alexeym: make it an opt instead of detecting provider
         var is_hls_provider = video.tech_ &&
             (video.tech_.flashlsProvider||video.tech_.hlsProvider);
