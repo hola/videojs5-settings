@@ -597,7 +597,7 @@ vjs.plugin('settings', function(opt){
             {
                 sources[i]['default'] =
                     source_sav ? sources[i]===source_sav :
-                    source_def ? sources[i]===source_def : !i;
+                    source_def ? sources[i]===source_def : false;
             }
             return sources;
         }
