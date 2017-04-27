@@ -133,8 +133,8 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         {
             label = sources[i].label || (sources.length==1 ?
                 'Auto' : ('Source '+(i+1)));
-            items.push(new QualityButton(player,
-                vjs.mergeOptions(sources[i], {label: label})));
+            items.push(new QualityButton(player, vjs.mergeOptions(sources[i],
+                {label: label, callback: quality.callback})));
         }
         return items;
     },
@@ -212,14 +212,14 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         var levels = data.quality.list;
         this.selectedLevel = data.quality.selected;
         this.currentLevel = data.quality.current;
-        if (this.levelsChanged(levels))
+        var quality = this.options_.quality = this.options_.quality||{};
+        if (this.levelsChanged(levels) || callback!=quality.callback)
         {
             levels.forEach(function(item){
-                sources.push({level_id: item.id, label: item.label,
-                    callback: callback});
+                sources.push({level_id: item.id, label: item.label});
             });
-            this.options_.quality = this.options_.quality||{};
-            this.options_.quality.sources = sources;
+            quality.sources = sources;
+            quality.callback = callback;
             this.update();
         }
         this.updateSelected();
