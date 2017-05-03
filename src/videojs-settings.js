@@ -2,6 +2,7 @@
 'use strict';
 require('@hola.org/videojs-utils');
 var Clipboard = require('clipboard');
+var find = require('lodash/find');
 var settings_icon_svg = '<svg height="100%" width="100%" viewBox="0 0 16 16">'
         +'<path class="st0" d="M16,9.4V6.6h-2.2c-0.2-0.6-0.4-1.3-0.8-1.8l1.5-1.5l-1.9-1.9l-1.5,1.5C10.6,2.6,10,2.3,9.4,2.2V0H6.6v2.2'
         +'C6,2.3,5.4,2.6,4.8,2.9L3.3,1.4L1.4,3.3l1.5,1.5C2.6,5.4,2.3,6,2.2,6.6H0v2.7h2.2c0.2,0.6,0.4,1.3,0.8,1.8l-1.5,1.5l1.9,1.9l1.5-1.5'
@@ -170,7 +171,7 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         var player = this.player_;
         var current_src = player.cache_.src;
         var hola = window.hola_cdn;
-        var wrapper = hola && hola.wrapper && hola.wrapper.find(function(w){
+        var wrapper = hola && hola.wrapper && find(hola.wrapper, function(w){
             return w.player && w.player.vjs==player;
         });
         // in case of hola_cdn attached get origin video url instead of blob
@@ -183,13 +184,13 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         });
         if (this.selectedLevel!==undefined)
         {
-            var auto = items.find(function(item){
+            var auto = find(items, function(item){
                 return item.options_.level_id==-1;
             });
             if (!auto)
                 return;
             var levels = (this.options_.quality||{}).sources||[];
-            var curLevel = this.currentLevel!==undefined && levels.find(
+            var curLevel = this.currentLevel!==undefined && find(levels,
                 function(l){ return l.level_id==_this.currentLevel; });
             auto.setMinorText(this.selectedLevel==-1 && curLevel ?
                 curLevel.label : '');
