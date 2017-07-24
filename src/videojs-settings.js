@@ -21,6 +21,7 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
         var _this = this;
         var opt = this.options_;
         var offset = opt.offset||5;
+        _this.menuEnabled = true;
         if (opt.debugging)
         {
             this.addChild(new LogButton(player, {label: 'Download log'}));
@@ -50,7 +51,7 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
                 label: 'About Hola Player',
             }));
         }
-        player_.on('contextmenu', function(evt){
+        function oncontextmenu(evt){
             evt.preventDefault();
             if (_this.popped)
             {
@@ -75,7 +76,8 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
                 _this.popped = true;
                 _this.check_items();
             }
-        });
+        }
+        player_.on('contextmenu', oncontextmenu);
         player_.on(['tap', 'click'], function(evt){
             if (_this.popped)
             {
@@ -92,6 +94,23 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
                 _this.popped = false;
             });
         });
+        player.enablePopupMenu = function(){
+            if (!_this.menuEnabled)
+            {
+                player_.off('contextmenu');
+                player_.on('contextmenu', oncontextmenu);
+                _this.menuEnabled = true;
+            }
+        };
+        player.disablePopupMenu = function(){
+            if (_this.menuEnabled)
+            {
+                player_.off('contextmenu');
+                player_.on('contextmenu', function(evt){
+                    evt.preventDefault(); });
+                _this.menuEnabled = false;
+            }
+        };
     },
     check_items: function(){
         this.children().forEach(function(item){
