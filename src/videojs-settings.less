@@ -10,7 +10,7 @@
         z-index: 2;
     }
     .vjs-settings-button {
-        order: 7;
+        order: 19;
         &>.vjs-button-icon {
             @cog-width: @control-width - 1.3em;
             height: 100%;
@@ -26,28 +26,32 @@
         }
         &:hover>.vjs-button-icon {
             opacity: 1;
-            &>svg>path {
-                transform: rotate(90deg);
-            }
         }
-        .vjs-menu {
-            width: 9em;
-            left: -2.5em;
-            z-index: 15;
-            &>.vjs-menu-content {
-                white-space: nowrap;
-                width: auto;
-                min-width: 9em;
-                max-height: none;
-                bottom: 2.75em;
-                padding: 0.5em 0;
-                transition: background 200ms ease;
-                .background-color-with-alpha(@control-bg-color, @control-bg-alpha);
-                cursor: default;
-            }
+    }
+    .vjs-settings-menu {
+        position: absolute;
+        width: auto;
+        right: 0.9em;
+        bottom: 4.8em;
+        z-index: 4;
+        visibility: hidden;
+        &.vjs-lock-showing {
+            visibility: visible;
+            transition: visibility 1ms;
+        }
+        &>.vjs-menu-content {
+            white-space: nowrap;
+            width: auto;
+            min-width: 9em;
+            max-height: none;
+            bottom: 2.75em;
+            padding: 0.5em 0;
+            transition: background 200ms ease;
+            .background-color-with-alpha(@control-bg-color, @control-bg-alpha);
+            cursor: default;
         }
         .vjs-menu-item {
-            padding: 0.3em 0.4em 0.2em 2em;
+            padding: 0.3em 1em 0.2em 2em;
             cursor: pointer;
             span {
                 color: @text-color-minor;
@@ -55,13 +59,20 @@
             }
         }
     }
-
-    &.vjs-settings-expanded .vjs-progress-control:hover {
-        .vjs-mouse-display-tooltip {
+    &.vjs-settings-expanded {
+        .vjs-progress-control:hover .vjs-mouse-display-tooltip,
+        .vjs-thumbnail {
             display:none;
         }
+        .vjs-settings-button>.vjs-button-icon>svg>path {
+            transform: rotate(30deg);
+        }
     }
-
+    &.vjs-live:not(.vjs-dvr) {
+        .vjs-settings-menu {
+            bottom: 3.9em;
+        }
+    }
     .vjs-info-overlay,
     .vjs-rightclick-popup {
         .border-radius();
@@ -149,8 +160,7 @@
             padding: 0.2em 1em;
         }
     }
-
-    .vjs-menu-item.vjs-selected {
+    .vjs-menu .vjs-menu-item.vjs-selected {
         color: #fff;
         background: transparent no-repeat;
         background-position: 0.5em center;
@@ -162,10 +172,9 @@
             .background-color-with-alpha(#73859f, @control-bg-alpha);
         }
     }
-
     &.vjs-large,
-    &.vjs-fullscreen {
-        .vjs-info-overlay {
+    &.vjs-fullscreen:not(.vjs-small) {
+        .vjs-info-overlay, .vjs-settings-menu {
             font-size: 100% * @vjs-large-scale;
         }
         .vjs-rightclick-popup {

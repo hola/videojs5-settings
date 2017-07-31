@@ -128,6 +128,20 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         player.on('resolutionchange', vjs.bind(this, this.updateSelected));
         this.updateSelected();
     },
+    update: function(){
+        var player = this.player_;
+        var menu = this.createMenu();
+        if (this.menu)
+            player.removeChild(this.menu);
+        this.menu = menu;
+        player.addChild(menu);
+        this.buttonPressed_ = false;
+        this.el_.setAttribute('aria-expanded', 'false');
+        if (this.items && !this.items.length)
+            this.hide();
+        else if (this.items && this.items.length>1)
+            this.show();
+    },
     createEl: function(){
         var settings_button = MenuButton.prototype.createEl.call(this);
         var icon = this.icon_ = document.createElement('div');
@@ -161,6 +175,7 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
     createMenu: function(){
         var _this = this;
         var menu = MenuButton.prototype.createMenu.call(this);
+        menu.addClass('vjs-settings-menu');
         menu.addClass('vjs-menu-popup-on-click');
         // videojs removes the locking state on menu item click that causes
         // settings button to hide without updating buttonPressed state
