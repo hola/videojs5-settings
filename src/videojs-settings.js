@@ -89,7 +89,7 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
             }
         });
         this.children().forEach(function(item){
-            item.on(['tap', 'click'], function(evt){
+            item.on(['tap', 'click'], function(){
                 _this.hide();
                 _this.popped = false;
             });
@@ -272,7 +272,7 @@ vjs.registerComponent('Overlay', vjs.extend(Component, {
         this.createContent(container);
         return container;
     },
-    createContent: function(container){},
+    createContent: function(){},
 }));
 function round(val){
     if (typeof val!='number')
@@ -514,16 +514,6 @@ vjs.registerComponent('InfoButton', vjs.extend(MenuItem, {
     },
 }));
 var InfoButton = vjs.getComponent('InfoButton');
-vjs.registerComponent('MenuLabel', vjs.extend(Component, {
-    createEl: function(type, props){
-        var prot = Component.prototype;
-        return prot.createEl.call(this, 'li', vjs.mergeOptions({
-            className: 'vjs-menu-item vjs-menu-label',
-            innerHTML: this.options_.label,
-        }, props));
-    },
-}));
-var MenuLabel = vjs.getComponent('MenuLabel');
 vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
     constructor: function(player, options){
         options = vjs.mergeOptions({selectable: true}, options);
