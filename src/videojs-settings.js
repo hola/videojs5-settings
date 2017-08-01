@@ -185,17 +185,25 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         return menu;
     },
     handleClick: function(){
-        var expanded_classname = 'vjs-settings-expanded';
         if (this.buttonPressed_)
-        {
-            this.player_.removeClass(expanded_classname);
             this.unpressButton();
-        }
         else
-        {
-            this.player_.addClass(expanded_classname);
             this.pressButton();
-        }
+    },
+    updateState: function(){
+        this.player_.toggleClass('vjs-settings-expanded', this.buttonPressed_);
+    },
+    unpressButton: function(){
+        MenuButton.prototype.unpressButton.call(this);
+        this.updateState();
+        this.clearInterval(this.activityInterval);
+    },
+    pressButton: function(){
+        MenuButton.prototype.pressButton.call(this);
+        this.updateState();
+        // prevent setting vjs-user-inactive when menu is opened
+        this.activityInterval = this.setInterval(
+            this.player_.reportUserActivity.bind(this.player_), 250);
     },
     tooltipHandler: function(){
         return this.icon_;
