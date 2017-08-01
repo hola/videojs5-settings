@@ -698,6 +698,14 @@ vjs.plugin('settings', function(opt){
         video.on('hola.wrapper_attached', menu.check_items.bind(menu));
         video.on('hola.wrapper_detached', menu.check_items.bind(menu));
     });
+    video.on('dblclick', function(e){
+        if (!video.tech_ || video.tech_.el()!=e.target)
+            return;
+        if (video.isFullscreen())
+            video.exitFullscreen();
+        else
+            video.requestFullscreen();
+    });
 });
 
 }(window, window.videojs));
