@@ -9,8 +9,12 @@ var settings_icon_svg = '<svg height="100%" width="100%" viewBox="0 0 16 16">'
         +'c0.5,0.3,1.2,0.6,1.8,0.8V16h2.7v-2.2c0.6-0.2,1.3-0.4,1.8-0.8l1.5,1.5l1.9-1.9l-1.5-1.5c0.3-0.5,0.6-1.2,0.8-1.8H16z M8,11'
         +'c-1.7,0-3-1.3-3-3s1.3-3,3-3s3,1.3,3,3S9.7,11,8,11z"/>'
     +'</svg>';
+function extend_component(name, parent, comp){
+    vjs.registerComponent(name, vjs.extend(vjs.getComponent(parent), comp));
+    return vjs.getComponent(name);
+}
 var Menu = vjs.getComponent('Menu');
-vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
+extend_component('PopupMenu', 'Menu', {
     className: 'vjs-rightclick-popup',
     popped: false,
     constructor: function(player, options){
@@ -118,44 +122,52 @@ vjs.registerComponent('PopupMenu', vjs.extend(Menu, {
                 item.toggleClass('vjs-hidden', !item.is_visible());
         });
     },
-}));
-var MenuButton = vjs.getComponent('MenuButton');
-vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
-    controlText_: 'Settings',
+});
+var SubMenuTitle = extend_component('SubMenuTitle', 'MenuItem', {
     constructor: function(player, options){
-        MenuButton.call(this, player, options);
+        MenuItem.call(this, player, options);
+        this.addClass('vjs-submenu-title');
+    },
+});
+var SubMenu = extend_component('SubMenu', 'Menu', {
+    constructor: function(player, options, parent){
+        Menu.call(this, player, options);
+        this.parent = parent;
+        if (this.className)
+            this.addClass(this.className);
+        this.update();
+    },
+    createEl: function(){
+        var el = Component.prototype.createEl.call(this, 'div',
+            {className: 'vjs-menu-content'});
+        el.setAttribute('role', 'menu');
+        return el;
+    },
+    update: function(){
+        this.children().forEach(this.removeChild.bind(this));
+        if (this.title)
+        {
+            var title = new SubMenuTitle(this.player_, {label: this.title});
+            var _this = this;
+            title.on('click', function(){
+                _this.parent.selectMain();
+            });
+            this.addChild(title);
+        }
+        if (this.createItems)
+            this.createItems();
+    },
+});
+var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
+    className: 'vjs-quality-submenu',
+    title: 'Quality',
+    constructor: function(player, options, parent){
+        SubMenu.call(this, player, options, parent);
         player.one('play', vjs.bind(this, this.updateSelected));
         player.on('resolutionchange', vjs.bind(this, this.updateSelected));
         this.updateSelected();
     },
-    update: function(){
-        var player = this.player_;
-        var menu = this.createMenu();
-        if (this.menu)
-            player.removeChild(this.menu);
-        this.menu = menu;
-        player.addChild(menu);
-        this.buttonPressed_ = false;
-        this.el_.setAttribute('aria-expanded', 'false');
-        if (this.items && !this.items.length)
-            this.hide();
-        else if (this.items && this.items.length>1)
-            this.show();
-    },
-    createEl: function(){
-        var settings_button = MenuButton.prototype.createEl.call(this);
-        var icon = this.icon_ = document.createElement('div');
-        icon.setAttribute('class', 'vjs-button-icon');
-        icon.innerHTML = settings_icon_svg;
-        settings_button.insertBefore(icon, settings_button.firstChild);
-        return settings_button;
-    },
-    buildCSSClass: function(){
-        var className = MenuButton.prototype.buildCSSClass.call(this);
-        return className+' vjs-settings-button';
-    },
     createItems: function(){
-        var items = [];
         var player = this.player_;
         var quality = this.options_.quality;
         var sources = quality && quality.sources ? quality.sources :
@@ -166,47 +178,10 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         for (var i=0; i<sources.length; i+=1)
         {
             label = sources[i].label || (sources.length==1 ?
-                'Auto' : ('Source '+(i+1)));
-            items.push(new QualityButton(player, vjs.mergeOptions(sources[i],
-                {label: label, callback: quality.callback})));
+                'Auto' : 'Source '+(i+1));
+            this.addChild(new QualityMenuItem(player, vjs.mergeOptions(
+                sources[i], {label: label, callback: quality.callback})));
         }
-        return items;
-    },
-    createMenu: function(){
-        var _this = this;
-        var menu = MenuButton.prototype.createMenu.call(this);
-        menu.addClass('vjs-settings-menu');
-        menu.addClass('vjs-menu-popup-on-click');
-        // videojs removes the locking state on menu item click that causes
-        // settings button to hide without updating buttonPressed state
-        menu.children().forEach(function(component){
-            component.on('click', function(){ _this.handleClick(); });
-        });
-        return menu;
-    },
-    handleClick: function(){
-        if (this.buttonPressed_)
-            this.unpressButton();
-        else
-            this.pressButton();
-    },
-    updateState: function(){
-        this.player_.toggleClass('vjs-settings-expanded', this.buttonPressed_);
-    },
-    unpressButton: function(){
-        MenuButton.prototype.unpressButton.call(this);
-        this.updateState();
-        this.clearInterval(this.activityInterval);
-    },
-    pressButton: function(){
-        MenuButton.prototype.pressButton.call(this);
-        this.updateState();
-        // prevent setting vjs-user-inactive when menu is opened
-        this.activityInterval = this.setInterval(
-            this.player_.reportUserActivity.bind(this.player_), 250);
-    },
-    tooltipHandler: function(){
-        return this.icon_;
     },
     updateSelected: function(){
         var _this = this;
@@ -219,8 +194,10 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         // in case of hola_cdn attached get origin video url instead of blob
         if (wrapper && wrapper.player)
             current_src = wrapper.player.get_url();
-        var items = this.menu.children();
+        var items = this.children();
         items.forEach(function(item){
+            if (!(item instanceof QualityMenuItem))
+                return;
             item.selected(item.options_.src ? item.options_.src==current_src :
                 item.options_.level_id==_this.selectedLevel);
         });
@@ -237,6 +214,12 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
             auto.setMinorText(this.selectedLevel==-1 && curLevel ?
                 curLevel.label : '');
         }
+    },
+    getSelected: function(){
+        return this.children().find(function(item){
+            return item instanceof QualityMenuItem &&
+                item.hasClass('vjs-selected');
+        });
     },
     levelsChanged: function(levels){
         var current = (this.options_.quality||{}).sources||[];
@@ -267,9 +250,213 @@ vjs.registerComponent('SettingsButton', vjs.extend(MenuButton, {
         }
         this.updateSelected();
     }
-}));
+});
+var QualityMenuItem = extend_component('QualityMenuItem', 'MenuItem', {
+    constructor: function(player, options){
+        options = vjs.mergeOptions({selectable: true}, options);
+        MenuItem.call(this, player, options);
+        if (options['default'])
+            this.player_.src(options.src);
+    },
+    handleClick: function(){
+        var player = this.player_;
+        player.controlBar.getChild('SettingsButton').unpressButton();
+        if (this.hasClass('vjs-selected'))
+            return;
+        var quality = this.options_;
+        var level_id = quality.level_id;
+        var event, event_name = 'beforeresolutionchange';
+        try { event = new window.CustomEvent(event_name); }
+        catch(e){
+            // XXX stanislav: IE 11 fix
+            event = document.createEvent('CustomEvent');
+            event.initCustomEvent(event_name, true, true, {});
+        }
+        player.trigger(event, quality);
+        if (event.defaultPrevented)
+            return;
+        if (level_id!==undefined)
+        {
+            if (quality.callback)
+                quality.callback(level_id);
+            player.trigger('resolutionchange');
+            return;
+        }
+        var current_time = player.currentTime();
+        var remain_paused = player.paused();
+        player.pause();
+        player.src(quality.src);
+        player.ready(function(){
+            player.one('loadeddata', function(){
+                if (player.techName_=='Html5')
+                {
+                    player.currentTime(current_time);
+                    return;
+                }
+                // XXX andrey: if seek immediately, video can stuck
+                // or play without sound, probably loadeddata is triggered
+                // when flash NetStream is not ready to seek yet
+                player.on('timeupdate', function on_timeupdate(){
+                    if (!player.currentTime())
+                        return;
+                    player.off('timeupdate', on_timeupdate);
+                    player.currentTime(current_time);
+                });
+            });
+            player.trigger('resolutionchange');
+            if (!remain_paused)
+            {
+                player.load();
+                player.play();
+            }
+        });
+    },
+    createEl: function(){
+        var el = MenuItem.prototype.createEl.apply(this, arguments);
+        this.minorLabel = document.createElement('span');
+        el.appendChild(this.minorLabel);
+        return el;
+    },
+    setMinorText: function(label){
+        this.minorLabel.innerHTML = label ? ' '+label : '';
+    },
+    getMinorText: function(){
+        return this.minorLabel.innerHTML;
+    },
+    getText: function(){
+        return this.options_.label;
+    },
+});
+var MainSubmenuItem = extend_component('MainSubmenuItem', 'MenuItem', {
+    createEl: function(){
+        var el = MenuItem.prototype.createEl.apply(this, arguments);
+        this.minorLabel = document.createElement('span');
+        this.minorLabel.className = 'vjs-minor-label';
+        el.appendChild(this.minorLabel);
+        this.contentLabel = document.createElement('span');
+        this.contentLabel.className = 'vjs-content-label';
+        el.appendChild(this.contentLabel);
+        return el;
+    },
+});
+var MainSubMenu = extend_component('MainSubMenu', 'SubMenu', {
+    className: 'vjs-main-submenu',
+    createItems: function(){
+        var item = new MainSubmenuItem(this.player_, {label: 'Quality'});
+        var parent = this.parent;
+        item.on('click', function(){ parent.setActive(parent.qualityMenu); });
+        this.addChild(item);
+        this.qualityItem = item;
+    },
+    updateQuality: function(item){
+        this.qualityItem.contentLabel.innerHTML = item&&item.getText()||'';
+        this.qualityItem.minorLabel.innerHTML = item&&item.getMinorText()||'';
+    },
+});
+var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
+    className: 'vjs-settings-menu',
+    constructor: function(player, options){
+        Menu.call(this, player, options);
+        this.addClass(this.className);
+        this.update();
+    },
+    createEl: function(){
+        var el = Component.prototype.createEl.call(this, 'div',
+            {className: 'vjs-menu'});
+        el.setAttribute('role', 'presentation');
+        el.addEventListener('click', function(event){
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        });
+        return el;
+    },
+    update: function(){
+        this.children().forEach(this.removeChild.bind(this));
+        this.createItems();
+    },
+    createItems: function(){
+        this.mainMenu = new MainSubMenu(this.player_, this.options_, this);
+        this.qualityMenu = new QualitySubMenu(this.player_, this.options_,
+            this);
+        this.addChild(this.mainMenu);
+        this.addChild(this.qualityMenu);
+        this.selectMain();
+    },
+    selectMain: function(){
+        this.setActive(this.mainMenu);
+        this.mainMenu.updateQuality(this.qualityMenu.getSelected());
+    },
+    setActive: function(menu){
+        this.children().forEach(function(item){
+            item.toggleClass('vjs-active-submenu', item==menu);
+        });
+    },
+    updateQuality: function(data){
+        this.qualityMenu.updateQuality(data);
+        this.mainMenu.updateQuality(this.qualityMenu.getSelected());
+    },
+});
+var MenuButton = vjs.getComponent('MenuButton');
+extend_component('SettingsButton', 'MenuButton', {
+    controlText_: 'Settings',
+    update: function(){
+        var player = this.player_;
+        var menu = new SettingsMenu(player, this.options_);
+        if (this.menu)
+            player.removeChild(this.menu);
+        this.menu = menu;
+        player.addChild(menu);
+        this.buttonPressed_ = false;
+        this.el_.setAttribute('aria-expanded', 'false');
+        if (this.items && !this.items.length)
+            this.hide();
+        else if (this.items && this.items.length>1)
+            this.show();
+    },
+    createEl: function(){
+        var settings_button = MenuButton.prototype.createEl.call(this);
+        var icon = this.icon_ = document.createElement('div');
+        icon.setAttribute('class', 'vjs-button-icon');
+        icon.innerHTML = settings_icon_svg;
+        settings_button.insertBefore(icon, settings_button.firstChild);
+        return settings_button;
+    },
+    buildCSSClass: function(){
+        var className = MenuButton.prototype.buildCSSClass.call(this);
+        return className+' vjs-settings-button';
+    },
+    handleClick: function(){
+        if (this.buttonPressed_)
+            this.unpressButton();
+        else
+            this.pressButton();
+    },
+    updateState: function(){
+        this.player_.toggleClass('vjs-settings-expanded', this.buttonPressed_);
+    },
+    unpressButton: function(){
+        MenuButton.prototype.unpressButton.call(this);
+        this.updateState();
+        this.clearInterval(this.activityInterval);
+    },
+    pressButton: function(){
+        this.menu.selectMain();
+        MenuButton.prototype.pressButton.call(this);
+        this.updateState();
+        // prevent setting vjs-user-inactive when menu is opened
+        this.activityInterval = this.setInterval(
+            this.player_.reportUserActivity.bind(this.player_), 250);
+    },
+    tooltipHandler: function(){
+        return this.icon_;
+    },
+    updateQuality: function(data){
+        this.menu.updateQuality(data);
+        // XXX andrey: add HD icon
+    },
+});
 var Component = vjs.getComponent('Component');
-vjs.registerComponent('Overlay', vjs.extend(Component, {
+var Overlay = extend_component('Overlay', 'Component', {
     createEl: function(type, props){
         var custom_class = this.options_['class'];
         custom_class = custom_class ? ' '+custom_class : '';
@@ -281,7 +468,7 @@ vjs.registerComponent('Overlay', vjs.extend(Component, {
         return container;
     },
     createContent: function(){},
-}));
+});
 function round(val){
     if (typeof val!='number')
         return val;
@@ -291,8 +478,7 @@ function is_wrapper_attached(check_bws){
     var hola = window.hola_cdn;
     return hola && hola.get_wrapper() && (!check_bws || !!hola._get_bws());
 }
-var Overlay = vjs.getComponent('Overlay');
-vjs.registerComponent('InfoOverlay', vjs.extend(Overlay, {
+extend_component('InfoOverlay', 'Overlay', {
     constructor: function(player, options){
         this.info_data = {
             duration: {
@@ -405,8 +591,8 @@ vjs.registerComponent('InfoOverlay', vjs.extend(Overlay, {
         this.visible = true;
         this.removeClass('vjs-hidden');
     },
-}));
-vjs.registerComponent('NotifyOverlay', vjs.extend(Overlay, {
+});
+extend_component('NotifyOverlay', 'Overlay', {
     createContent: function(container){
         var _this = this;
         function create_el(el, opt){
@@ -440,9 +626,9 @@ vjs.registerComponent('NotifyOverlay', vjs.extend(Overlay, {
             _this.addClass('vjs-hidden');
         }, 3500);
     },
-}));
+});
 var MenuItem = vjs.getComponent('MenuItem');
-vjs.registerComponent('MenuItemLink', vjs.extend(MenuItem, {
+var MenuItemLink = extend_component('MenuItemLink', 'MenuItem', {
     createEl: function(type, props){
         var prot = MenuItem.prototype;
         var label = this.localize(this.options_.label);
@@ -463,9 +649,8 @@ vjs.registerComponent('MenuItemLink', vjs.extend(MenuItem, {
         return el;
     },
     handleClick: function(e){ e.stopPropagation(); },
-}));
-var MenuItemLink = vjs.getComponent('MenuItemLink');
-vjs.registerComponent('ReportButton', vjs.extend(MenuItem, {
+});
+var ReportButton = extend_component('ReportButton', 'MenuItem', {
     is_visible: is_wrapper_attached,
     handleClick: function(){
         this.player_.trigger({type: 'problem_report'});
@@ -474,25 +659,22 @@ vjs.registerComponent('ReportButton', vjs.extend(MenuItem, {
             overlay.flash();
         this.selected(false);
     },
-}));
-var ReportButton = vjs.getComponent('ReportButton');
-vjs.registerComponent('LogButton', vjs.extend(MenuItem, {
+});
+var LogButton = extend_component('LogButton', 'MenuItem', {
     is_visible: is_wrapper_attached,
     handleClick: function(){
         this.player_.trigger({type: 'save_logs'});
         this.selected(false);
     },
-}));
-var LogButton = vjs.getComponent('LogButton');
-vjs.registerComponent('GraphButton', vjs.extend(MenuItem, {
+});
+var GraphButton = extend_component('GraphButton', 'MenuItem', {
     is_visible: is_wrapper_attached.bind(null, true),
     handleClick: function(){
         this.player_.trigger({type: 'cdn_graph_overlay'});
         this.selected(false);
     },
-}));
-var GraphButton = vjs.getComponent('GraphButton');
-vjs.registerComponent('CopyLogButton', vjs.extend(MenuItem, {
+});
+var CopyLogButton = extend_component('CopyLogButton', 'MenuItem', {
     constructor: function(player, options){
         MenuItem.call(this, player, options);
         var player_ = player;
@@ -512,86 +694,14 @@ vjs.registerComponent('CopyLogButton', vjs.extend(MenuItem, {
         MenuItem.prototype.dispose.call(this);
     },
     is_visible: is_wrapper_attached,
-}));
-var CopyLogButton = vjs.getComponent('CopyLogButton');
-vjs.registerComponent('InfoButton', vjs.extend(MenuItem, {
+});
+var InfoButton = extend_component('InfoButton', 'MenuItem', {
     handleClick: function(){
         var overlay;
         if (overlay = this.player_.getChild('InfoOverlay'))
             overlay.toggle(this);
     },
-}));
-var InfoButton = vjs.getComponent('InfoButton');
-vjs.registerComponent('QualityButton', vjs.extend(MenuItem, {
-    constructor: function(player, options){
-        options = vjs.mergeOptions({selectable: true}, options);
-        MenuItem.call(this, player, options);
-        if (options['default'])
-            this.player_.src(options.src);
-    },
-    handleClick: function(){
-        if (this.hasClass('vjs-selected'))
-            return;
-        var player = this.player_;
-        var quality = this.options_;
-        var level_id = quality.level_id;
-        var event, event_name = 'beforeresolutionchange';
-        try { event = new window.CustomEvent(event_name); }
-        catch(e){
-            // XXX stanislav: IE 11 fix
-            event = document.createEvent('CustomEvent');
-            event.initCustomEvent(event_name, true, true, {});
-        }
-        player.trigger(event, quality);
-        if (event.defaultPrevented)
-            return;
-        if (level_id!==undefined)
-        {
-            if (quality.callback)
-                quality.callback(level_id);
-            player.trigger('resolutionchange');
-            return;
-        }
-        var current_time = player.currentTime();
-        var remain_paused = player.paused();
-        player.pause();
-        player.src(quality.src);
-        player.ready(function(){
-            player.one('loadeddata', function(){
-                if (player.techName_=='Html5')
-                {
-                    player.currentTime(current_time);
-                    return;
-                }
-                // XXX andrey: if seek immediately, video can stuck
-                // or play without sound, probably loadeddata is triggered
-                // when flash NetStream is not ready to seek yet
-                player.on('timeupdate', function on_timeupdate(){
-                    if (!player.currentTime())
-                        return;
-                    player.off('timeupdate', on_timeupdate);
-                    player.currentTime(current_time);
-                });
-            });
-            player.trigger('resolutionchange');
-            if (!remain_paused)
-            {
-                player.load();
-                player.play();
-            }
-        });
-    },
-    createEl: function(){
-        var el = MenuItem.prototype.createEl.apply(this, arguments);
-        this.minorLabel = document.createElement('span');
-        el.appendChild(this.minorLabel);
-        return el;
-    },
-    setMinorText: function(label){
-        this.minorLabel.innerHTML = label ? ' '+label : '';
-    },
-}));
-var QualityButton = vjs.getComponent('QualityButton');
+});
 
 vjs.plugin('settings', function(opt){
     var video = this;
