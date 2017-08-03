@@ -30,32 +30,44 @@
             opacity: 1;
         }
     }
-    .vjs-settings-menu {
+    .vjs-menu.vjs-settings-menu {
         position: absolute;
         width: auto;
         right: 0.9em;
         bottom: 4.8em;
+        padding: 0.5em 0;
         z-index: 4;
         font-weight: bold;
         visibility: hidden;
+        overflow: hidden;
+        .background-color-with-alpha(@control-bg-color, @control-bg-alpha);
+        opacity: 0;
+        transition: opacity 100ms;
+        will-change: width,height;
+        &.vjs-size-transition {
+            transition: height 200ms, width 200ms;
+        }
         &.vjs-lock-showing {
             visibility: visible;
-            transition: visibility 1ms;
+            opacity: 1;
         }
         &>.vjs-menu-content {
-            display: none;
             white-space: nowrap;
             width: auto;
             min-width: 9em;
             max-height: none;
             bottom: 2.75em;
-            padding: 0.5em 0;
+            padding: 0;
             transition: background 200ms ease;
-            .background-color-with-alpha(@control-bg-color, @control-bg-alpha);
             cursor: default;
         }
-        &>.vjs-menu-content.vjs-active-submenu {
-            display: block;
+        &>.vjs-menu-content:not(.vjs-active-submenu) {
+            width: 0;
+            height: 0;
+            padding: 0;
+            position: absolute;
+            overflow: hidden;
+            visibility: hidden;
         }
         .vjs-main-submenu {
             min-width: 20em;
@@ -96,6 +108,7 @@
         .vjs-menu-item.vjs-submenu-title {
             border-bottom: 1px solid rgba(255, 255, 255, 0.3);
             padding-top: 0.2em;
+            margin-bottom: 0.2em;
             text-align: left;
             background: transparent no-repeat;
             background-position: left center;

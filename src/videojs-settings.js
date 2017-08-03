@@ -149,7 +149,7 @@ var SubMenu = extend_component('SubMenu', 'Menu', {
         {
             var title = new SubMenuTitle(this.player_, {label: this.title});
             var _this = this;
-            title.on('click', function(){
+            title.on(['tap', 'click'], function(){
                 _this.parent.selectMain();
             });
             this.addChild(title);
@@ -332,10 +332,11 @@ var MainSubmenuItem = extend_component('MainSubmenuItem', 'MenuItem', {
         var el = MenuItem.prototype.createEl.apply(this, arguments);
         this.minorLabel = document.createElement('span');
         this.minorLabel.className = 'vjs-minor-label';
-        el.appendChild(this.minorLabel);
+        var first = el.firstChild;
+        el.insertBefore(this.minorLabel, first);
         this.contentLabel = document.createElement('span');
         this.contentLabel.className = 'vjs-content-label';
-        el.appendChild(this.contentLabel);
+        el.insertBefore(this.contentLabel, first);
         return el;
     },
 });
@@ -344,7 +345,8 @@ var MainSubMenu = extend_component('MainSubMenu', 'SubMenu', {
     createItems: function(){
         var item = new MainSubmenuItem(this.player_, {label: 'Quality'});
         var parent = this.parent;
-        item.on('click', function(){ parent.setActive(parent.qualityMenu); });
+        item.on(['tap', 'click'], function(){
+            parent.setActive(parent.qualityMenu); });
         this.addChild(item);
         this.qualityItem = item;
     },
@@ -380,13 +382,43 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
             this);
         this.addChild(this.mainMenu);
         this.addChild(this.qualityMenu);
-        this.selectMain();
+        this.selectMain(true);
     },
-    selectMain: function(){
-        this.setActive(this.mainMenu);
+    selectMain: function(no_transition){
+        this.setActive(this.mainMenu, no_transition);
         this.mainMenu.updateQuality(this.qualityMenu.getSelected());
     },
-    setActive: function(menu){
+    show: function(visible){
+        if (visible)
+        {
+            this.el_.style.height = '';
+            this.el_.style.width = '';
+            this.selectMain(true);
+            this.addClass('vjs-lock-showing');
+            return;
+        }
+        var _this = this;
+        this.el_.style.opacity = '0';
+        this.setTimeout(function(){
+            this.el_.style.opacity = '';
+            _this.removeClass('vjs-lock-showing');
+        }, 100);
+    },
+    setActive: function(menu, no_transition){
+        var el = this.el_, _this = this;
+        var style = !no_transition && window.getComputedStyle &&
+            window.getComputedStyle(el);
+        if (style)
+        {
+            el.style.height = el.offsetHeight+'px';
+            el.style.width = el.offsetWidth+'px';
+            this.addClass('vjs-size-transition');
+            el.style.height = parseFloat(style.paddingTop)+
+                parseFloat(style.paddingBottom)+menu.el_.scrollHeight+'px';
+            el.style.width = menu.el_.scrollWidth+'px';
+            this.setTimeout(function(){
+                _this.removeClass('vjs-size-transition'); }, 200);
+        }
         this.children().forEach(function(item){
             item.toggleClass('vjs-active-submenu', item==menu);
         });
@@ -433,16 +465,23 @@ extend_component('SettingsButton', 'MenuButton', {
     },
     updateState: function(){
         this.player_.toggleClass('vjs-settings-expanded', this.buttonPressed_);
+        this.el_.setAttribute('aria-expanded', this.buttonPressed_);
+        this.menu.show(this.buttonPressed_);
     },
     unpressButton: function(){
-        MenuButton.prototype.unpressButton.call(this);
+        if (!this.enabled_)
+            return;
+        this.buttonPressed_ = false;
         this.updateState();
+        this.el_.focus();
         this.clearInterval(this.activityInterval);
     },
     pressButton: function(){
-        this.menu.selectMain();
-        MenuButton.prototype.pressButton.call(this);
+        if (!this.enabled_)
+            return;
+        this.buttonPressed_ = true;
         this.updateState();
+        this.menu.focus();
         // prevent setting vjs-user-inactive when menu is opened
         this.activityInterval = this.setInterval(
             this.player_.reportUserActivity.bind(this.player_), 250);
