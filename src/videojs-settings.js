@@ -467,6 +467,13 @@ extend_component('SettingsButton', 'MenuButton', {
         this.player_.toggleClass('vjs-settings-expanded', this.buttonPressed_);
         this.el_.setAttribute('aria-expanded', this.buttonPressed_);
         this.menu.show(this.buttonPressed_);
+        var svg = this.el_.querySelector('.vjs-button-icon>svg>path');
+        if (svg)
+        {
+            // IE and Edge doesn't support svg css transform
+            svg.setAttribute('transform', this.buttonPressed_ ?
+                'rotate(-30, 8, 8)' : '');
+        }
     },
     unpressButton: function(){
         if (!this.enabled_)
