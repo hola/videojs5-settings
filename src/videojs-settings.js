@@ -475,6 +475,11 @@ extend_component('SettingsButton', 'MenuButton', {
         this.updateState();
         this.el_.focus();
         this.clearInterval(this.activityInterval);
+        if (this.clickListener)
+        {
+            document.removeEventListener('click', this.clickListener);
+            this.clickListener = null;
+        }
     },
     pressButton: function(){
         if (!this.enabled_)
@@ -485,6 +490,11 @@ extend_component('SettingsButton', 'MenuButton', {
         // prevent setting vjs-user-inactive when menu is opened
         this.activityInterval = this.setInterval(
             this.player_.reportUserActivity.bind(this.player_), 250);
+        var _this = this;
+        this.setTimeout(function(){
+            _this.clickListener = _this.unpressButton.bind(_this);
+            document.addEventListener('click', _this.clickListener);
+        });
     },
     tooltipHandler: function(){
         return this.icon_;
