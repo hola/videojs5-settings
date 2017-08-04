@@ -235,7 +235,8 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
     updateQuality: function(data){
         var sources = [];
         var callback = data.callback;
-        var levels = data.quality.list;
+        var levels = data.quality.list.slice().sort(function(a, b){
+            return a.id==-1 ? 1 : b.bitrate-a.bitrate; });
         this.selectedLevel = data.quality.selected;
         this.currentLevel = data.quality.current;
         var quality = this.options_.quality = this.options_.quality||{};
