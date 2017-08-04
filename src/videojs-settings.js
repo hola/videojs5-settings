@@ -362,15 +362,15 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
         Menu.call(this, player, options);
         this.addClass(this.className);
         this.update();
+        this.on(['tap', 'click', 'touchstart', 'touchend'], function(event){
+            event.preventDefault();
+            event.stopPropagation();
+        });
     },
     createEl: function(){
         var el = Component.prototype.createEl.call(this, 'div',
             {className: 'vjs-menu'});
         el.setAttribute('role', 'presentation');
-        el.addEventListener('click', function(event){
-            event.preventDefault();
-            event.stopImmediatePropagation();
-        });
         return el;
     },
     update: function(){
@@ -485,7 +485,8 @@ extend_component('SettingsButton', 'MenuButton', {
         this.clearInterval(this.activityInterval);
         if (this.clickListener)
         {
-            document.removeEventListener('click', this.clickListener);
+            vjs.off(document, ['tap', 'click'], this.clickListener);
+            this.player_.off(['tap', 'click'], this.clickListener);
             this.clickListener = null;
         }
     },
@@ -501,7 +502,8 @@ extend_component('SettingsButton', 'MenuButton', {
         var _this = this;
         this.setTimeout(function(){
             _this.clickListener = _this.unpressButton.bind(_this);
-            document.addEventListener('click', _this.clickListener);
+            vjs.on(document, ['tap', 'click'], this.clickListener);
+            _this.player_.on(['tap', 'click'], this.clickListener);
         });
     },
     tooltipHandler: function(){
