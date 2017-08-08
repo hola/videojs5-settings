@@ -194,31 +194,28 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
         // in case of hola_cdn attached get origin video url instead of blob
         if (wrapper && wrapper.player)
             current_src = wrapper.player.get_url();
-        var items = this.children();
+        var items = this.children(), selected_label;
         items.forEach(function(item){
             if (!(item instanceof QualityMenuItem))
                 return;
-            item.selected(item.options_.src ? item.options_.src==current_src :
-                item.options_.level_id==_this.selectedLevel);
+            var selected = item.options_.src ? item.options_.src==current_src :
+                item.options_.level_id==_this.selectedLevel;
+            item.selected(selected);
+            if (selected)
+                selected_label = item.getLabel();
         });
+        var current_label;
         if (this.selectedLevel!==undefined)
         {
-            var auto = find(items, function(item){
-                return item.options_.level_id==-1;
-            });
-            if (!auto)
-                return;
             var levels = (this.options_.quality||{}).sources||[];
-            var curLevel = this.currentLevel!==undefined && find(levels,
+            var cur = this.currentLevel!==undefined && find(levels,
                 function(l){ return l.level_id==_this.currentLevel; });
-            auto.setMinorText(this.selectedLevel==-1 && curLevel ?
-                curLevel.label : '');
+            current_label = this.selectedLevel==-1 && cur ? cur.label : '';
         }
-    },
-    getSelected: function(){
-        return this.children().find(function(item){
-            return item instanceof QualityMenuItem &&
-                item.hasClass('vjs-selected');
+        player.trigger('qualitychanged', {
+            selected: selected_label,
+            current: current_label,
+            hd: is_hd(selected_label) || is_hd(current_label),
         });
     },
     levelsChanged: function(levels){
@@ -252,10 +249,21 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
         this.updateSelected();
     }
 });
+function is_hd(label){
+    var m  = label && label.match(/(\d+)p/);
+    return !!m && parseInt(m[1])>=720;
+}
+function is_hls_provider(player){
+    // XXX bahaa/alexeym: make it an opt instead of detecting provider
+    return player.tech_ && (player.tech_.flashlsProvider ||
+        player.tech_.hlsProvider);
+}
 var QualityMenuItem = extend_component('QualityMenuItem', 'MenuItem', {
     constructor: function(player, options){
         options = vjs.mergeOptions({selectable: true}, options);
         MenuItem.call(this, player, options);
+        if (is_hd(options.label))
+            this.addClass('vjs-quality-hd');
         if (options['default'])
             this.player_.src(options.src);
     },
@@ -312,37 +320,35 @@ var QualityMenuItem = extend_component('QualityMenuItem', 'MenuItem', {
             }
         });
     },
-    createEl: function(){
-        var el = MenuItem.prototype.createEl.apply(this, arguments);
-        this.minorLabel = document.createElement('span');
-        el.appendChild(this.minorLabel);
-        return el;
-    },
-    setMinorText: function(label){
-        this.minorLabel.innerHTML = label ? ' '+label : '';
-    },
-    getMinorText: function(){
-        return this.minorLabel.innerHTML;
-    },
-    getText: function(){
+    getLabel: function(){
         return this.options_.label;
     },
 });
 var MainSubmenuItem = extend_component('MainSubmenuItem', 'MenuItem', {
     createEl: function(){
         var el = MenuItem.prototype.createEl.apply(this, arguments);
+        var span = document.createElement('span');
+        span.className = 'vjs-selected-quality';
         this.minorLabel = document.createElement('span');
         this.minorLabel.className = 'vjs-minor-label';
-        var first = el.firstChild;
-        el.insertBefore(this.minorLabel, first);
         this.contentLabel = document.createElement('span');
-        this.contentLabel.className = 'vjs-content-label';
-        el.insertBefore(this.contentLabel, first);
+        span.appendChild(this.contentLabel);
+        span.appendChild(this.minorLabel);
+        el.insertBefore(span, el.firstChild);
         return el;
     },
 });
 var MainSubMenu = extend_component('MainSubMenu', 'SubMenu', {
     className: 'vjs-main-submenu',
+    constructor: function(player, options, parent){
+        SubMenu.call(this, player, options, parent);
+        var _this = this;
+        player.on('qualitychanged', function(e, data){
+            _this.qualityItem.contentLabel.innerHTML = data.selected||'';
+            _this.qualityItem.minorLabel.innerHTML = data.current||'';
+            _this.qualityItem.toggleClass('vjs-quality-hd', data.hd);
+        });
+    },
     createItems: function(){
         var item = new MainSubmenuItem(this.player_, {label: 'Quality'});
         var parent = this.parent;
@@ -350,10 +356,6 @@ var MainSubMenu = extend_component('MainSubMenu', 'SubMenu', {
             parent.setActive(parent.qualityMenu); });
         this.addChild(item);
         this.qualityItem = item;
-    },
-    updateQuality: function(item){
-        this.qualityItem.contentLabel.innerHTML = item&&item.getText()||'';
-        this.qualityItem.minorLabel.innerHTML = item&&item.getMinorText()||'';
     },
 });
 var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
@@ -387,7 +389,6 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
     },
     selectMain: function(no_transition){
         this.setActive(this.mainMenu, no_transition);
-        this.mainMenu.updateQuality(this.qualityMenu.getSelected());
     },
     show: function(visible){
         if (visible)
@@ -424,14 +425,17 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
             item.toggleClass('vjs-active-submenu', item==menu);
         });
     },
-    updateQuality: function(data){
-        this.qualityMenu.updateQuality(data);
-        this.mainMenu.updateQuality(this.qualityMenu.getSelected());
-    },
 });
 var MenuButton = vjs.getComponent('MenuButton');
 extend_component('SettingsButton', 'MenuButton', {
     controlText_: 'Settings',
+    constructor: function(player, options){
+        MenuButton.call(this, player, options);
+        var _this = this;
+        player.on('qualitychanged', function(e, data){
+            _this.toggleClass('vjs-quality-hd', data.hd);
+        });
+    },
     update: function(){
         var player = this.player_;
         var menu = new SettingsMenu(player, this.options_);
@@ -471,7 +475,7 @@ extend_component('SettingsButton', 'MenuButton', {
         var svg = this.el_.querySelector('.vjs-button-icon>svg>path');
         if (svg)
         {
-            // IE and Edge doesn't support svg css transform
+            // IE and Edge don't support svg css transform
             svg.setAttribute('transform', this.buttonPressed_ ?
                 'rotate(-30, 8, 8)' : '');
         }
@@ -508,10 +512,6 @@ extend_component('SettingsButton', 'MenuButton', {
     },
     tooltipHandler: function(){
         return this.icon_;
-    },
-    updateQuality: function(data){
-        this.menu.updateQuality(data);
-        // XXX andrey: add HD icon
     },
 });
 var Component = vjs.getComponent('Component');
@@ -807,12 +807,9 @@ vjs.plugin('settings', function(opt){
             return video.controlBar.addChild('SettingsButton',
                 vjs.mergeOptions(opt));
         }
-        // XXX bahaa/alexeym: make it an opt instead of detecting provider
-        var is_hls_provider = video.tech_ &&
-            (video.tech_.flashlsProvider||video.tech_.hlsProvider);
         if (opt.quality===true)
             opt.quality = {sources: video.options_.sources};
-        if (opt.quality && !is_hls_provider)
+        if (opt.quality && !is_hls_provider(video))
         {
             var quality_key = 'vjs5_quality';
             opt.quality.sources = sources_normalize(opt.quality.sources,
@@ -831,7 +828,7 @@ vjs.plugin('settings', function(opt){
         var settings_button;
         if (opt.quality && opt.quality.sources && opt.quality.sources.length>1)
             settings_button = add_settings_button();
-        if (opt.quality && is_hls_provider)
+        if (opt.quality && is_hls_provider(video))
         {
             video.tech_.on('loadedqualitydata', function(e, data){
                 var sources = data && data.quality && data.quality.list || [];
@@ -839,7 +836,7 @@ vjs.plugin('settings', function(opt){
                     return;
                 if (!settings_button)
                     settings_button = add_settings_button();
-                settings_button.updateQuality(data);
+                settings_button.menu.qualityMenu.updateQuality(data);
             });
         }
         if (opt.info)

@@ -3,6 +3,7 @@
 @done-glyph: ~'data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjRkZGRkZGIiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4gICAgPHBhdGggZD0iTTAgMGgyNHYyNEgweiIgZmlsbD0ibm9uZSIvPiAgICA8cGF0aCBkPSJNOSAxNi4yTDQuOCAxMmwtMS40IDEuNEw5IDE5IDIxIDdsLTEuNC0xLjRMOSAxNi4yeiIvPjwvc3ZnPg==';
 @prev-glyph: ~'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZlcnNpb249IjEuMSIgZmlsbD0iI0ZGRkZGRiIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDMyIDMyIiB3aWR0aD0iMjQiPjxwYXRoIGQ9Ik0gMTkuNDEsMjAuMDkgMTQuODMsMTUuNSAxOS40MSwxMC45MSAxOCw5LjUgbCAtNiw2IDYsNiB6IiAvPjwvc3ZnPg';
 @next-glyph: ~'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMjQiIHZlcnNpb249IjEuMSIgdmlld0JveD0iMCAwIDMyIDMyIiB3aWR0aD0iMjQiIGZpbGw9IiNGRkZGRkYiPjxwYXRoIGQ9Im0gMTIuNTksMjAuMzQgNC41OCwtNC41OSAtNC41OCwtNC41OSAxLjQxLC0xLjQxIDYsNiAtNiw2IHoiLz48L3N2Zz4=';
+@hd-glyph: ~'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iOXB4IiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAxMyA5IiB3aWR0aD0iMTNweCIgZmlsbD0iI2ZmZiIgZmlsbC1ydWxlPSJldmVub2RkIj4KICAgIDxwYXRoIGQ9Ik01LDcgTDYsNyBMNiw4IEw1LDggTDUsNyBaIE0xMCwzIEwxMCw0IEw4LDQgTDgsMyBMMTAsMyBaIE0zLDYgTDMsNSBMNSw1IEw1LDYgTDMsNiBaIE0yLDcgTDMsNyBMMyw4IEwyLDggTDIsNyBaIE03LDcgTDEwLDcgTDEwLDggTDcsOCBMNyw3IFogTTEwLDYgTDExLDYgTDExLDcgTDEwLDcgTDEwLDYgWiIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjY0NzEiIGZpbGwtcnVsZT0iZXZlbm9kZCIgLz48cGF0aCBkPSJNNSw3IEw1LDYgTDUsNSBMMyw1IEwzLDYgTDMsNyBMMiw3IEwyLDIgTDMsMiBMMyw0IEw1LDQgTDUsMiBMNiwyIEw2LDcgTDUsNyBaIE0xMSw2IEwxMCw2IEwxMCw3IEw3LDcgTDcsMiBMMTAsMiBMMTAsMyBMMTEsMyBMMTEsNiBaIE0xMCw0IEwxMCwzIEw4LDMgTDgsNCBMOCw2IEwxMCw2IEwxMCw0IFoiLz4KPC9zdmc+';
 
 @context-menu-scale: 1.1;
 
@@ -28,6 +29,18 @@
         }
         &:hover>.vjs-button-icon {
             opacity: 1;
+        }
+        &.vjs-quality-hd .vjs-button-icon:after {
+            content: '';
+            position: absolute;
+            background-color: #f10;
+            background-image: url(@hd-glyph);
+            width: 1.3em;
+            height: .9em;
+            margin-left: -.8em;
+            background-size: contain;
+            margin-top: .6em;
+            background-repeat: no-repeat;
         }
     }
     .vjs-menu.vjs-settings-menu {
@@ -69,6 +82,10 @@
             overflow: hidden;
             visibility: hidden;
         }
+        .vjs-menu-item {
+            line-height: 2em;
+            cursor: pointer;
+        }
         .vjs-main-submenu {
             min-width: 20em;
             .vjs-menu-item {
@@ -82,21 +99,41 @@
                     color: #fff;
                     .background-color-with-alpha(#73859f, @control-bg-alpha);
                 }
-                .vjs-content-label {
+                .vjs-selected-quality {
                     float: right;
+                    .vjs-minor-label {
+                        padding-left: 0.2em;
+                        color: @text-color-minor;
+                        font-size: 90%;
+                    }
                 }
-                .vjs-minor-label {
-                    margin-left: 0.2em;
-                    float: right;
-                    color: @text-color-minor;
-                    font-size: 90%;
+                &.vjs-quality-hd {
+                    padding-right: 3em;
+                    .vjs-selected-quality:after {
+                        position: absolute;
+                        content: 'HD';
+                        font-size: 0.8em;
+                        color: #f10;
+                        vertical-align: super;
+                        margin-left: 0.2em;
+                        margin-top: -0.5em;
+                    }
                 }
             }
         }
-        .vjs-menu-item {
-            line-height: 2em;
-            padding: 0.3em 1em 0.2em 2em;
-            cursor: pointer;
+        .vjs-quality-submenu .vjs-menu-item {
+            padding: 0.3em 1.8em 0.2em 2em;
+            &.vjs-quality-hd {
+                &:after {
+                    position: absolute;
+                    content: 'HD';
+                    font-size: 0.8em;
+                    color: #f10;
+                    vertical-align: super;
+                    margin-left: 0.2em;
+                    margin-top: -0.5em;
+                }
+            }
         }
         .vjs-quality-submenu .vjs-menu-item {
             text-align: right;
