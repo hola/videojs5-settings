@@ -251,7 +251,7 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
 });
 function is_hd(label){
     var m  = label && label.match(/(\d+)p/);
-    return !!m && parseInt(m[1])>=720;
+    return !!m && parseInt(m[1], 10)>=720;
 }
 function is_hls_provider(player){
     // XXX bahaa/alexeym: make it an opt instead of detecting provider
