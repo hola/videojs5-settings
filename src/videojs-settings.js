@@ -215,7 +215,7 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
         player.trigger('qualitychanged', {
             selected: selected_label,
             current: current_label,
-            hd: is_hd(selected_label) || is_hd(current_label),
+            type: quality_type(selected_label)||quality_type(current_label),
         });
     },
     levelsChanged: function(levels){
@@ -249,9 +249,10 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
         this.updateSelected();
     }
 });
-function is_hd(label){
+function quality_type(label){
     var m  = label && label.match(/(\d+)p/);
-    return !!m && parseInt(m[1], 10)>=720;
+    var q = m && parseInt(m[1], 10);
+    return q>=2160 ? '4k' : q>=720 ? 'hd' : null;
 }
 function is_hls_provider(player){
     // XXX bahaa/alexeym: make it an opt instead of detecting provider
@@ -262,8 +263,9 @@ var QualityMenuItem = extend_component('QualityMenuItem', 'MenuItem', {
     constructor: function(player, options){
         options = vjs.mergeOptions({selectable: true}, options);
         MenuItem.call(this, player, options);
-        if (is_hd(options.label))
-            this.addClass('vjs-quality-hd');
+        var qt;
+        if (qt = quality_type(options.label))
+            this.addClass('vjs-quality-'+qt);
         if (options['default'])
             this.player_.src(options.src);
     },
@@ -346,7 +348,8 @@ var MainSubMenu = extend_component('MainSubMenu', 'SubMenu', {
         player.on('qualitychanged', function(e, data){
             _this.qualityItem.contentLabel.innerHTML = data.selected||'';
             _this.qualityItem.minorLabel.innerHTML = data.current||'';
-            _this.qualityItem.toggleClass('vjs-quality-hd', data.hd);
+            _this.qualityItem.toggleClass('vjs-quality-hd', data.type=='hd');
+            _this.qualityItem.toggleClass('vjs-quality-4k', data.type=='4k');
         });
     },
     createItems: function(){
@@ -433,7 +436,8 @@ extend_component('SettingsButton', 'MenuButton', {
         MenuButton.call(this, player, options);
         var _this = this;
         player.on('qualitychanged', function(e, data){
-            _this.toggleClass('vjs-quality-hd', data.hd);
+            _this.toggleClass('vjs-quality-hd', data.type=='hd');
+            _this.toggleClass('vjs-quality-4k', data.type=='4k');
         });
     },
     update: function(){
