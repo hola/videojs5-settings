@@ -834,14 +834,18 @@ vjs.plugin('settings', function(opt){
             settings_button = add_settings_button();
         if (opt.quality && is_hls_provider(video))
         {
-            video.tech_.on('loadedqualitydata', function(e, data){
+            var update_quality = function(data){
                 var sources = data && data.quality && data.quality.list || [];
                 if (sources.length<2)
                     return;
                 if (!settings_button)
                     settings_button = add_settings_button();
                 settings_button.menu.qualityMenu.updateQuality(data);
-            });
+            };
+            video.tech_.on('loadedqualitydata', function(e, data){
+                update_quality(data); });
+            if (video.tech_.quality_data)
+                update_quality(video.tech_.quality_data);
         }
         if (opt.info)
             video.addChild('InfoOverlay', {}).addClass('vjs-hidden');
