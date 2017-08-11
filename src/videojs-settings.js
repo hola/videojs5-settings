@@ -233,7 +233,7 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
         var sources = [];
         var callback = data.callback;
         var levels = data.quality.list.slice().sort(function(a, b){
-            return a.id==-1 ? 1 : b.bitrate-a.bitrate; });
+            return b.id==-1 ? -1 : a.id==-1 ? 1 : b.bitrate-a.bitrate; });
         this.selectedLevel = data.quality.selected;
         this.currentLevel = data.quality.current;
         var quality = this.options_.quality = this.options_.quality||{};
@@ -250,7 +250,7 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
     }
 });
 function quality_type(label){
-    var m  = label && label.match(/(\d+)p/);
+    var m = label && label.match(/(\d+)p/);
     var q = m && parseInt(m[1], 10);
     return q>=2160 ? '4k' : q>=720 ? 'hd' : null;
 }
