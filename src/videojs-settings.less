@@ -16,10 +16,9 @@
     .vjs-settings-button {
         order: 19;
         &>.vjs-button-icon {
-            @cog-width: @control-width - 1.3em;
             height: 100%;
-            width: @cog-width;
-            padding: 0 ((@control-width+(@control-padding*2))-@cog-width)/2;
+            width: @control-width;
+            padding: 0;
             opacity: 0.9;
             transition: opacity 200ms ease;
             &>svg>path {
@@ -38,9 +37,9 @@
             background-color: #f10;
             width: 1.3em;
             height: .9em;
-            margin-left: -.8em;
+            left: 1.8em;
+            bottom: 1.8em;
             background-size: contain;
-            margin-top: .6em;
             background-repeat: no-repeat;
         }
         &.vjs-quality-hd .vjs-button-icon:after {
