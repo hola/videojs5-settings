@@ -21,11 +21,14 @@
             padding: 0;
             opacity: 0.9;
             transition: opacity 200ms ease;
-            &>svg>path {
+            &>svg {
                 fill: #fff;
-                transform-origin: 8px 8px;
-                transition: transform 200ms ease;
+                transform-origin: 50% 50%;
+                transition: transform 100ms ease;
             }
+        }
+        &[aria-expanded=true]>.vjs-button-icon>svg {
+            transform: rotateZ(30deg)
         }
         &:hover>.vjs-button-icon {
             opacity: 1;
@@ -168,9 +171,6 @@
         .vjs-thumbnail, .vjs-tooltip {
             display:none;
         }
-        .vjs-settings-button>.vjs-button-icon>svg>path {
-            transform: rotate(30deg);
-        }
     }
     &.vjs-live:not(.vjs-dvr) {
         .vjs-settings-menu {
@@ -282,10 +282,6 @@
         }
         .vjs-rightclick-popup {
             font-size: (100% * @context-menu-scale) * @vjs-large-scale;
-        }
-        .vjs-settings-button>.vjs-button-icon {
-            @cog-width: @control-width - 1.3em;
-            transform-origin: @cog-width * 1.088 @cog-width * 0.892;
         }
     }
 }
