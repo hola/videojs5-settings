@@ -409,20 +409,34 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
             _this.removeClass('vjs-lock-showing');
         }, 100);
     },
+    getSize: function(){
+        return {width: this.el_.offsetWidth, height: this.el_.offsetHeight};
+    },
+    setSize: function(size){
+        this.el_.style.height = size ? size.height+'px' : '';
+        this.el_.style.width = size ? size.width+'px' : '';
+    },
     setActive: function(menu, no_transition){
-        var el = this.el_, _this = this;
-        var style = !no_transition && window.getComputedStyle &&
-            window.getComputedStyle(el);
-        if (style)
+        if (!no_transition && window.requestAnimationFrame)
         {
-            el.style.height = el.offsetHeight+'px';
-            el.style.width = el.offsetWidth+'px';
-            this.addClass('vjs-size-transition');
-            el.style.height = parseFloat(style.paddingTop)+
-                parseFloat(style.paddingBottom)+menu.el_.scrollHeight+'px';
-            el.style.width = menu.el_.scrollWidth+'px';
-            this.setTimeout(function(){
-                _this.removeClass('vjs-size-transition'); }, 200);
+            var _this = this, old_size = this.getSize();
+            this.el_.style.visibility = 'hidden';
+            window.requestAnimationFrame(function(){
+                var new_size = _this.getSize();
+                _this.setSize(old_size);
+                _this.el_.style.visibility = '';
+                _this.addClass('vjs-size-transition');
+                window.requestAnimationFrame(function(){
+                    var on_end = function(){
+                        _this.removeClass('vjs-size-transition');
+                        _this.setSize();
+                        _this.clearTimeout(timeout);
+                    };
+                    _this.setSize(new_size);
+                    _this.one('transitionend', on_end);
+                    var timeout = _this.setTimeout(on_end, 300);
+                });
+            });
         }
         this.children().forEach(function(item){
             item.toggleClass('vjs-active-submenu', item==menu);
