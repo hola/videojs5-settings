@@ -210,8 +210,7 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
                 'Auto' : 'Source '+(i+1));
             var item = new QualityMenuItem(player, vjs.mergeOptions(
                 sources[i], {label: label, callback: quality.callback}));
-            item.on(['tap', 'click'], function(){
-                _this.handleItemClick(this); });
+            item.on(['tap', 'click'], _this.handleItemClick.bind(_this, item));
             this.addChild(item);
         }
     },
