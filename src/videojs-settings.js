@@ -246,10 +246,7 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
         player.ready(function(){
             player.one('loadeddata', function(){
                 if (player.techName_=='Html5')
-                {
-                    player.currentTime(current_time);
-                    return;
-                }
+                    return void player.currentTime(current_time);
                 // XXX andrey: if seek immediately, video can stuck
                 // or play without sound, probably loadeddata is triggered
                 // when flash NetStream is not ready to seek yet
@@ -601,7 +598,7 @@ extend_component('InfoOverlay', 'Overlay', {
                     var pos = p.currentTime();
                     if (range && range.length)
                     {
-                        for (var i=0; i<range.length; i+=1)
+                        for (var i=0; i<range.length; i++)
                         {
                             if (range.start(i)<=pos && range.end(i)>=pos)
                                 return round(range.end(i)-pos);
@@ -618,7 +615,7 @@ extend_component('InfoOverlay', 'Overlay', {
                     var buf_sec = 0;
                     if (range && range.length)
                     {
-                        for (var i=0; i<range.length; i+=1)
+                        for (var i=0; i<range.length; i++)
                             buf_sec += range.end(i)-range.start(i);
                     }
                     return round(buf_sec);
@@ -824,7 +821,7 @@ vjs.plugin('settings', function(opt){
         function sources_normalize(sources, label_sav){
             var i, source_def, source_sav;
             sources = sources.filter(function(e){ return e.src; });
-            for (i=0; i<sources.length; i+=1)
+            for (i=0; i<sources.length; i++)
             {
                 if (!sources[i].label)
                     sources[i].label = sources[i].type;
@@ -836,7 +833,7 @@ vjs.plugin('settings', function(opt){
                     source_sav = sources[i];
                 }
             }
-            for (i=0; i<sources.length; i+=1)
+            for (i=0; i<sources.length; i++)
             {
                 sources[i]['default'] =
                     source_sav ? sources[i]===source_sav :
