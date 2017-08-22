@@ -20,6 +20,11 @@ var settings_icon_svg = '<svg viewBox="0 0 36 36">'
     +'-2.8 0,-1.54 1.25,-2.8 2.8,-2.8 1.54,0 2.8,1.25 2.8,2.8 0,1.54 -1.25,'
     +'2.8 -2.8,2.8 l 0,0 z"/>'
     +'</svg>';
+var captions_icon_svg = '<svg viewBox="-12 -12 72 72">'
+    +'<path d="M40 8H8c-2.21 0-4 1.79-4 4v24c0 2.21 1.79 4 4 4h32c2.21 0 '
+    +'4-1.79 4-4V12c0-2.21-1.79-4-4-4zM8 24h8v4H8v-4zm20 12H8v-4h20v4zm12 '
+    +'0h-8v-4h8v4zm0-8H20v-4h20v4z"/>'
+    +'</svg>';
 function extend_component(name, parent, comp){
     vjs.registerComponent(name, vjs.extend(vjs.getComponent(parent), comp));
     return vjs.getComponent(name);
@@ -391,6 +396,18 @@ var SpeedSubMenu = extend_component('SpeedSubMenu', 'SubMenu', {
         });
     },
 });
+function get_captions_tracks(player){
+    var tracks = [];
+    var tt = player.textTracks();
+    if (!tt || !tt.length)
+        return tracks;
+    for (var i=0; i<tt.length; i++)
+    {
+        if (tt[i].kind=='subtitles' || tt[i].kind=='captions')
+            tracks.push(tt[i]);
+    }
+    return tracks;
+}
 var CaptionsSubMenu = extend_component('CaptionsSubMenu', 'SubMenu', {
     className: 'vjs-captions-submenu',
     title: 'Captions',
@@ -405,15 +422,13 @@ var CaptionsSubMenu = extend_component('CaptionsSubMenu', 'SubMenu', {
     },
     createItems: function(){
         var player = this.player();
-        var tt = player.textTracks();
-        if (!tt || !tt.length)
+        var tracks = get_captions_tracks(player);
+        if (!tracks.length)
             return void this.menuItem.hide();
         this.menuItem.show();
-        for (var i=-1; i<tt.length; i++)
+        for (var i=-1; i<tracks.length; i++)
         {
-            var track = tt[i];
-            if (track && track.kind!='subtitles' && track.kind!='captions')
-                continue;
+            var track = tracks[i];
             var item = new MenuItem(player, {
                 label: track ? track.label||track.language||track.kind : 'Off',
                 selectable: true,
@@ -858,6 +873,52 @@ var InfoButton = extend_component('InfoButton', 'MenuItem', {
             overlay.toggle(this);
     },
 });
+var Button = vjs.getComponent('Button');
+extend_component('CaptionsToggle', 'Button', {
+    controlText_: 'Captions',
+    constructor: function(player, options){
+        Button.call(this, player, options);
+        this.addClass('vjs-captions-toggle');
+        this.hide();
+        var tt = player.textTracks();
+        if (!tt || !tt.on)
+            return;
+        this.on(tt, 'addtrack', this.update);
+        this.on(tt, 'removetrack', this.update);
+        this.on(tt, 'change', this.update);
+    },
+    createEl: function(){
+        var el = Button.prototype.createEl.call(this);
+        this.icon_ = vjs.createEl('div', {className: 'vjs-button-icon',
+            innerHTML: captions_icon_svg});
+        el.insertBefore(this.icon_, el.firstChild);
+        return el;
+    },
+    handleClick: function(){
+        if (!this.track)
+            return;
+        this.track.mode = this.track.mode=='showing' ? 'disabled' : 'showing';
+    },
+    update: function(){
+        var tracks = get_captions_tracks(this.player());
+        if (tracks.length)
+            this.show();
+        else
+            this.hide();
+        if (this.track && !tracks.includes(this.track))
+            this.track = null;
+        var current = tracks.find(function(t){ return t.mode=='showing'; });
+        if (current)
+            this.track = current;
+        if (!this.track)
+        {
+            this.track = tracks.find(function(t){ return t['default']; }) ||
+                tracks[0];
+        }
+        this.toggleClass('vjs-pressed',
+            this.track && this.track.mode=='showing');
+    },
+});
 
 vjs.plugin('settings', function(opt){
     var video = this;
@@ -919,6 +980,7 @@ vjs.plugin('settings', function(opt){
             });
         }
         video.controlBar.addChild('SettingsButton', vjs.mergeOptions(opt));
+        video.controlBar.addChild('CaptionsToggle', vjs.mergeOptions(opt));
         if (opt.info)
             video.addChild('InfoOverlay');
         if (opt.report)
