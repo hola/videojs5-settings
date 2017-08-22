@@ -164,12 +164,14 @@ var SubMenu = extend_component('SubMenu', 'Menu', {
         return el;
     },
     update: function(){
-        this.children().forEach(this.removeChild.bind(this));
+        var _this = this, children = this.children();
+        while (children.length)
+            this.removeChild(children[0]);
+        this.items = [];
         if (this.title)
         {
             var title = new MenuItem(this.player_, {label: this.title});
             title.addClass('vjs-submenu-title');
-            var _this = this;
             title.on(['tap', 'click'], function(){
                 _this.parent.selectMain();
             });
@@ -177,6 +179,7 @@ var SubMenu = extend_component('SubMenu', 'Menu', {
         }
         if (this.createItems)
             this.createItems();
+        this.items.forEach(function(item){ _this.addChild(item); });
     },
 });
 var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
@@ -211,7 +214,7 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
             var item = new QualityMenuItem(player, vjs.mergeOptions(
                 sources[i], {label: label, callback: quality.callback}));
             item.on(['tap', 'click'], _this.handleItemClick.bind(_this, item));
-            this.addChild(item);
+            this.items.push(item);
         }
     },
     handleItemClick: function(item){
@@ -275,10 +278,8 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
         // in case of hola_cdn attached get origin video url instead of blob
         if (wrapper && wrapper.player)
             current_src = wrapper.player.get_url();
-        var items = this.children(), selected_label;
+        var items = this.items, selected_label;
         items.forEach(function(item){
-            if (!(item instanceof QualityMenuItem))
-                return;
             var selected = item.options_.src ? item.options_.src==current_src :
                 item.options_.level_id==_this.selectedLevel;
             item.selected(selected);
@@ -377,17 +378,65 @@ var SpeedSubMenu = extend_component('SpeedSubMenu', 'SubMenu', {
                 if (rate!=player.playbackRate())
                     player.playbackRate(rate);
             });
-            _this.addChild(item);
+            _this.items.push(item);
         });
     },
     handleRateChange: function(){
         var rate = this.player().playbackRate();
         this.menuItem.contentLabel.innerHTML = rate==1 ? 'Normal' : rate;
-        this.children().forEach(function(item){
-            if (!item.options_.rate)
-                return;
+        this.items.forEach(function(item){
             item.selected(item.options_.rate==rate);
         });
+    },
+});
+var CaptionsSubMenu = extend_component('CaptionsSubMenu', 'SubMenu', {
+    className: 'vjs-captions-submenu',
+    title: 'Captions',
+    constructor: function(player, options, parent){
+        SubMenu.call(this, player, options, parent);
+        var tt = player.textTracks();
+        if (!tt || !tt.on)
+            return;
+        this.on(tt, 'addtrack', this.update);
+        this.on(tt, 'removetrack', this.update);
+        this.on(tt, 'change', this.handleTrackChange);
+    },
+    createItems: function(){
+        var player = this.player();
+        var tt = player.textTracks();
+        if (!tt || !tt.length)
+            return void this.menuItem.hide();
+        this.menuItem.show();
+        for (var i=-1; i<tt.length; i++)
+        {
+            var track = tt[i];
+            if (track && track.kind!='subtitles' && track.kind!='captions')
+                continue;
+            var item = new MenuItem(player, {
+                label: track ? track.label||track.language||track.kind : 'Off',
+                selectable: true,
+                track: track,
+            });
+            item.on(['tap', 'click'], this.handleItemClick.bind(this, item));
+            this.items.push(item);
+        }
+        this.handleTrackChange();
+    },
+    handleItemClick: function(item){
+        var player = this.player();
+        var tt = player.textTracks();
+        for (var i=0; i<tt.length; i++)
+            tt[i].mode = tt[i]==item.options_.track ? 'showing' : 'disabled';
+        this.parent.selectMain();
+        this.handleTrackChange();
+    },
+    handleTrackChange: function(){
+        var selected = this.items.find(function(item){
+            return item.options_.track && item.options_.track.mode=='showing';
+        }) || this.items.find(function(item){ return !item.options_track; });
+        this.items.forEach(function(item){ item.selected(item==selected); });
+        this.menuItem.contentLabel.innerHTML =
+            selected ? selected.options_.label : '';
     },
 });
 var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
@@ -421,8 +470,9 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
         this.mainMenu = new SubMenu(this.player_, this.options_, this);
         this.mainMenu.addClass('vjs-main-submenu');
         this.addChild(this.mainMenu);
-        this.addSubMenu(new SpeedSubMenu(this.player_, this.options_, this));
-        this.addSubMenu(new QualitySubMenu(this.player_, this.options_, this));
+        var menus = [SpeedSubMenu, CaptionsSubMenu, QualitySubMenu];
+        for (var i=0; i<menus.length; i++)
+            this.addSubMenu(new menus[i](this.player_, this.options_, this));
         this.selectMain(true);
     },
     selectMain: function(no_transition){
