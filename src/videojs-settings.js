@@ -103,6 +103,8 @@ extend_component('PopupMenu', 'Menu', {
                 return false;
             }
         });
+        player_.on('hola.wrapper_attached', this.check_items.bind(this));
+        player_.on('hola.wrapper_detached', this.check_items.bind(this));
         this.children().forEach(function(item){
             item.on(['tap', 'click'], function(){
                 _this.hide();
@@ -603,6 +605,10 @@ extend_component('SettingsButton', 'MenuButton', {
 });
 var Component = vjs.getComponent('Component');
 var Overlay = extend_component('Overlay', 'Component', {
+    constructor: function(player, options){
+        Component.call(this, player, options);
+        this.hide();
+    },
     createEl: function(type, props){
         var custom_class = this.options_['class'];
         custom_class = custom_class ? ' '+custom_class : '';
@@ -739,6 +745,10 @@ extend_component('InfoOverlay', 'Overlay', {
     },
 });
 extend_component('NotifyOverlay', 'Overlay', {
+    constructor: function(player, options){
+        Overlay.call(this, player, options);
+        this.addClass('vjs-notify-overlay');
+    },
     createContent: function(container){
         var _this = this;
         function create_el(el, opt){
@@ -910,12 +920,9 @@ vjs.plugin('settings', function(opt){
         }
         video.controlBar.addChild('SettingsButton', vjs.mergeOptions(opt));
         if (opt.info)
-            video.addChild('InfoOverlay', {}).addClass('vjs-hidden');
+            video.addChild('InfoOverlay');
         if (opt.report)
-        {
-            video.addChild('NotifyOverlay', {'class': 'vjs-notify-overlay'})
-            .addClass('vjs-hidden');
-        }
+            video.addChild('NotifyOverlay');
         if (opt.volume)
         {
             var volume_key = 'vjs5_volume', mute_key = 'vjs5_mute';
@@ -938,9 +945,7 @@ vjs.plugin('settings', function(opt){
                 local_storage_set(mute_key, video.muted());
             });
         }
-        var menu = video.addChild('PopupMenu', vjs.mergeOptions(opt));
-        video.on('hola.wrapper_attached', menu.check_items.bind(menu));
-        video.on('hola.wrapper_detached', menu.check_items.bind(menu));
+        video.addChild('PopupMenu', vjs.mergeOptions(opt));
     });
 });
 
