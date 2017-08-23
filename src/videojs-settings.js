@@ -886,6 +886,7 @@ extend_component('CaptionsToggle', 'Button', {
         this.on(tt, 'addtrack', this.update);
         this.on(tt, 'removetrack', this.update);
         this.on(tt, 'change', this.update);
+        this.update();
     },
     createEl: function(){
         var el = Button.prototype.createEl.call(this);
