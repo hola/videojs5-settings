@@ -142,27 +142,16 @@ extend_component('PopupMenu', 'Menu', {
     },
 });
 var SubMenu = extend_component('SubMenu', 'Menu', {
+    addToMain: true,
     constructor: function(player, options, parent){
         Menu.call(this, player, options);
+        this.items = [];
         this.parent = parent;
         this.createMenuItem();
+        this.createTitleItem();
         if (this.className)
             this.addClass(this.className);
         this.update();
-    },
-    createMenuItem: function(){
-        if (!this.title)
-            return;
-        var player = this.player(), _this = this;
-        var item = this.menuItem = new MenuItem(player, {label: this.title});
-        var span = vjs.createEl('span', {className: 'vjs-menu-item-content'});
-        item.minorLabel = vjs.createEl('span', {className: 'vjs-minor-label'});
-        item.contentLabel = vjs.createEl('span');
-        span.appendChild(item.contentLabel);
-        span.appendChild(item.minorLabel);
-        item.el().insertBefore(span, item.el().firstChild);
-        item.on(['tap', 'click'], function(){
-            _this.parent.setActive(_this); });
     },
     createEl: function(){
         var el = Component.prototype.createEl.call(this, 'div',
@@ -170,23 +159,47 @@ var SubMenu = extend_component('SubMenu', 'Menu', {
         el.setAttribute('role', 'menu');
         return el;
     },
+    createTitleItem: function(){
+        if (!this.title)
+            return;
+        var _this = this;
+        var title = new MenuItem(this.player_, {label: this.title});
+        title.addClass('vjs-submenu-title');
+        title.on(['tap', 'click'], function(){
+            _this.parent.back();
+        });
+        this.addChild(title);
+        this.titleItem = title;
+    },
+    createMenuItem: function(){
+        if (!this.title || !this.addToMain)
+            return;
+        var player = this.player(), _this = this;
+        var item = this.menuItem = new MenuItem(player, {label: this.title});
+        item.addClass('vjs-menu-item-next');
+        var span = vjs.createEl('span', {className: 'vjs-menu-item-content'});
+        item.minorLabel = vjs.createEl('span', {className: 'vjs-minor-label'});
+        item.contentLabel = vjs.createEl('span');
+        span.appendChild(item.contentLabel);
+        span.appendChild(item.minorLabel);
+        item.el().insertBefore(span, item.el().firstChild);
+        item.on(['tap', 'click'], function(){
+            _this.parent.next(_this); });
+    },
     update: function(){
-        var _this = this, children = this.children();
-        while (children.length)
-            this.removeChild(children[0]);
+        var _this = this;
+        this.items.forEach(function(item){ _this.removeChild(item); });
         this.items = [];
-        if (this.title)
-        {
-            var title = new MenuItem(this.player_, {label: this.title});
-            title.addClass('vjs-submenu-title');
-            title.on(['tap', 'click'], function(){
-                _this.parent.selectMain();
-            });
-            this.addChild(title);
-        }
         if (this.createItems)
             this.createItems();
-        this.items.forEach(function(item){ _this.addChild(item); });
+        this.items.forEach(function(item){
+            _this.addChild(item);
+            if (_this.handleItemClick)
+            {
+               item.on(['tap', 'click'], _this.handleItemClick.bind(_this,
+                   item));
+            }
+        });
     },
 });
 var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
@@ -207,7 +220,7 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
         }
     },
     createItems: function(){
-        var player = this.player(), _this = this;
+        var player = this.player();
         var quality = this.options_.quality;
         var sources = quality && quality.sources ? quality.sources :
             player.options_.sources;
@@ -220,7 +233,6 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
                 'Auto' : 'Source '+(i+1));
             var item = new QualityMenuItem(player, vjs.mergeOptions(
                 sources[i], {label: label, callback: quality.callback}));
-            item.on(['tap', 'click'], _this.handleItemClick.bind(_this, item));
             this.items.push(item);
         }
     },
@@ -380,13 +392,14 @@ var SpeedSubMenu = extend_component('SpeedSubMenu', 'SubMenu', {
                 selectable: true,
                 rate: rate,
             });
-            item.on(['tap', 'click'], function(){
-                _this.parent.selectMain();
-                if (rate!=player.playbackRate())
-                    player.playbackRate(rate);
-            });
             _this.items.push(item);
         });
+    },
+    handleItemClick: function(item){
+        var player = this.player();
+        this.parent.back();
+        if (item.options_.rate!=player.playbackRate())
+            player.playbackRate(item.options_.rate);
     },
     handleRateChange: function(){
         var rate = this.player().playbackRate();
@@ -409,13 +422,21 @@ function get_captions_tracks(player){
     return tracks;
 }
 var CaptionsSubMenu = extend_component('CaptionsSubMenu', 'SubMenu', {
-    className: 'vjs-captions-submenu',
     title: 'Captions',
     constructor: function(player, options, parent){
         SubMenu.call(this, player, options, parent);
         var tt = player.textTracks();
         if (!tt || !tt.on)
             return;
+        this.optionsMenu = new CaptionsOptionsMenu(player, options, parent);
+        this.parent.addSubMenu(this.optionsMenu);
+        var opt_el = vjs.createEl('div', {className: 'vjs-minor-label',
+            innerHTML: 'Options'});
+        this.titleItem.el().appendChild(opt_el);
+        this.on(opt_el, ['touchstart', 'click'], function(event){
+            event.stopPropagation();
+            parent.next(this.optionsMenu);
+        });
         this.on(tt, 'addtrack', this.update);
         this.on(tt, 'removetrack', this.update);
         this.on(tt, 'change', this.handleTrackChange);
@@ -434,7 +455,6 @@ var CaptionsSubMenu = extend_component('CaptionsSubMenu', 'SubMenu', {
                 selectable: true,
                 track: track,
             });
-            item.on(['tap', 'click'], this.handleItemClick.bind(this, item));
             this.items.push(item);
         }
         this.handleTrackChange();
@@ -444,7 +464,7 @@ var CaptionsSubMenu = extend_component('CaptionsSubMenu', 'SubMenu', {
         var tt = player.textTracks();
         for (var i=0; i<tt.length; i++)
             tt[i].mode = tt[i]==item.options_.track ? 'showing' : 'disabled';
-        this.parent.selectMain();
+        this.parent.back();
         this.handleTrackChange();
     },
     handleTrackChange: function(){
@@ -456,15 +476,157 @@ var CaptionsSubMenu = extend_component('CaptionsSubMenu', 'SubMenu', {
             selected ? selected.options_.label : '';
     },
 });
+var CaptionsOptionsMenu = extend_component('CaptionsOptionsMenu', 'SubMenu', {
+    title: 'Options',
+    addToMain: false,
+    dict: {
+        font: [
+            {value: 'monospaceSerif', text: 'Monospace Serif'},
+            {value: 'proportionalSerif', text: 'Proportional Serif'},
+            {value: 'monospaceSansSerif', text: 'Monospace Sans-Serif'},
+            {value: 'proportionalSansSerif', text: 'Proportional Sans-Serif'},
+            {value: 'casual', text: 'Casual'},
+            {value: 'script', text: 'Script'},
+            {value: 'smallcaps', text: 'Small Caps'}
+        ],
+        size: [
+            {value: '0.50', text: '50%'},
+            {value: '0.75', text: '75%'},
+            {value: '1.00', text: '100%'},
+            {value: '1.50', text: '150%'},
+            {value: '2.00', text: '200%'},
+            {value: '3.00', text: '300%'},
+            {value: '4.00', text: '400%'}
+        ],
+        opacity: [
+            {value: '0.00', text: '0%'},
+            {value: '0.25', text: '25%'},
+            {value: '0.50', text: '50%'},
+            {value: '0.75', text: '75%'},
+            {value: '1.00', text: '100%'}
+        ],
+        color: [
+            {value: '#FFF', text: 'White'},
+            {value: '#000', text: 'Black'},
+            {value: '#F00', text: 'Red'},
+            {value: '#0F0', text: 'Green'},
+            {value: '#00F', text: 'Blue'},
+            {value: '#FF0', text: 'Yellow'},
+            {value: '#F0F', text: 'Magenta'},
+            {value: '#0FF', text: 'Cyan'}
+        ],
+        edge: [
+            {value: 'none', text: 'None'},
+            {value: 'raised', text: 'Raised'},
+            {value: 'depressed', text: 'Depressed'},
+            {value: 'uniform', text: 'Uniform'},
+            {value: 'dropshadow', text: 'Drop shadow'}
+        ],
+    },
+    constructor: function(player, options, parent){
+        var d = this.dict;
+        this.params = [
+            {key: 'fontFamily', text: 'Font family', dict: d.font, def: 3},
+            {key: 'color', text: 'Font color', dict: d.color, def: 0},
+            {key: 'fontPercent', text: 'Font size', dict: d.size, def: 2},
+            {key: 'textOpacity', text: 'Font opacity', dict: d.opacity,
+                def: 4},
+            {key: 'backgroundColor', text: 'Background color', dict: d.color,
+                def: 1},
+            {key: 'backgroundOpacity', text: 'Background opacity',
+                dict: d.opacity, def: 3},
+            {key: 'windowColor', text: 'Window color', dict: d.color, def: 1},
+            {key: 'windowOpacity', text: 'Window opacity', dict: d.opacity,
+                def: 0},
+            {key: 'edgeStyle', text: 'Text edge style', dict: d.edge, def: 0}
+        ];
+        this.reset();
+        SubMenu.call(this, player, options, parent);
+        this.selectMenu = new SelectValueMenu(player, options, parent);
+        this.on(this.selectMenu, 'selected', this.handleValueChange);
+        this.parent.addSubMenu(this.selectMenu);
+        var orig = player.getChild('textTrackSettings');
+        player.removeChild(orig);
+        orig.dispose();
+        player.textTrackSettings = this;
+    },
+    reset: function(){
+        this.params.forEach(function(p){ p.value = p.dict[p.def]; });
+    },
+    getValues: function(){
+        var res = {};
+        this.params.forEach(function(p){ res[p.key] = p.value.value; });
+        return res;
+    },
+    createItems: function(){
+        var player = this.player, items = this.items;
+        this.params.forEach(function(p){
+            var item = new MenuItem(player, {label: p.text});
+            item.param = p;
+            item.addClass('vjs-menu-item-next');
+            var span = vjs.createEl('span',
+                {className: 'vjs-menu-item-content', innerHTML: p.value.text});
+            item.contentLabel = span;
+            item.el().insertBefore(span, item.el().firstChild);
+            items.push(item);
+        });
+        items.push(new MenuItem(player, {label: 'Reset', reset: true}));
+    },
+    handleItemClick: function(item){
+        if (item.options_.reset)
+        {
+            this.reset();
+            this.update();
+            this.player().textTrackDisplay.updateDisplay();
+            return;
+        }
+        this.currentItem = item;
+        var p = item.param;
+        this.selectMenu.show({title: p.text, dict: p.dict, selected: p.value});
+    },
+    handleValueChange: function(event, value){
+        this.currentItem.param.value = value;
+        this.currentItem.contentLabel.innerHTML = value.text;
+        this.player().textTrackDisplay.updateDisplay();
+    },
+});
+var SelectValueMenu = extend_component('SelectValueMenu', 'SubMenu', {
+    addToMain: false,
+    dict: [],
+    show: function(opt){
+        this.title = opt.title;
+        if (this.titleItem)
+            this.removeChild(this.titleItem);
+        this.createTitleItem();
+        this.dict = opt.dict;
+        this.update();
+        this.items.forEach(function(item){
+            item.selected(item.value==opt.selected);
+        });
+        this.parent.next(this);
+    },
+    createItems: function(){
+        var items = this.items, player = this.player();
+        this.dict.forEach(function(d){
+            var item = new MenuItem(player, {label: d.text, selectable: true});
+            item.value = d;
+            items.push(item);
+        });
+    },
+    handleItemClick: function(item){
+        this.trigger('selected', item.value);
+        this.items.forEach(function(i){ i.selected(i==item); });
+    },
+});
 var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
     className: 'vjs-settings-menu',
+    history: [],
     constructor: function(player, options, settings_button){
         Menu.call(this, player, options);
         this.settings_button = settings_button;
         this.addClass(this.className);
         this.update();
         this.on(['tap', 'click', 'touchstart', 'touchend'], function(event){
-            event.preventDefault();
             event.stopPropagation();
         });
     },
@@ -493,6 +655,7 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
         this.selectMain(true);
     },
     selectMain: function(no_transition){
+        this.history = [];
         this.setActive(this.mainMenu, no_transition);
     },
     show: function(visible){
@@ -540,10 +703,18 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
                 });
             });
         }
+        this.active = menu;
         this.children().forEach(function(item){
             item.toggleClass('vjs-active-submenu', item==menu);
         });
     },
+    next: function(menu){
+        this.history.push(this.active);
+        this.setActive(menu);
+    },
+    back: function(){
+        this.setActive(this.history.pop() || this.mainMenu);
+    }
 });
 var MenuButton = vjs.getComponent('MenuButton');
 extend_component('SettingsButton', 'MenuButton', {
