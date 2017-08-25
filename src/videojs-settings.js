@@ -42,6 +42,14 @@ extend_component('PopupMenu', 'Menu', {
         var opt = this.options_;
         var offset = opt.offset||5;
         _this.menuEnabled = true;
+        this.addChild(new CopyUrlButton(player, {label: 'Copy video URL'}));
+        this.addChild(new CopyUrlButton(player,
+            {label: 'Copy video URL at current time', time: true}));
+        if (opt.embed_code)
+        {
+            this.addChild(new CopyButton(player, {label: 'Copy embed code',
+                text: opt.embed_code}));
+        }
         if (opt.debugging)
         {
             this.addChild(new LogButton(player, {label: 'Download log'}));
@@ -265,19 +273,7 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
         player.pause();
         player.src(quality.src);
         player.ready(function(){
-            player.one('loadeddata', function(){
-                if (player.techName_=='Html5')
-                    return void player.currentTime(current_time);
-                // XXX andrey: if seek immediately, video can stuck
-                // or play without sound, probably loadeddata is triggered
-                // when flash NetStream is not ready to seek yet
-                player.on('timeupdate', function on_timeupdate(){
-                    if (!player.currentTime())
-                        return;
-                    player.off('timeupdate', on_timeupdate);
-                    player.currentTime(current_time);
-                });
-            });
+            seek(player, current_time);
             player.trigger('resolutionchange');
             if (!remain_paused)
             {
@@ -1043,26 +1039,47 @@ var GraphButton = extend_component('GraphButton', 'MenuItem', {
         this.selected(false);
     },
 });
-var CopyLogButton = extend_component('CopyLogButton', 'MenuItem', {
+var CopyButton = extend_component('CopyButton', 'MenuItem', {
     constructor: function(player, options){
         MenuItem.call(this, player, options);
-        var player_ = player;
         this.clipboard = new Clipboard(this.el_, {
-            text: function(){
-                if (!player_.hola_logs)
-                    return 'Can\'t find hola_logs method!';
-                return player_.hola_logs();
-            },
+            text: this.getText.bind(this),
         });
         this.on('tap', function(e){
             this.clipboard.onClick({currentTarget: e.target});
         });
     },
+    getText: function(){
+        return this.options_.text;
+    },
     dispose: function(){
         this.clipboard.destroy();
         MenuItem.prototype.dispose.call(this);
     },
+});
+var CopyLogButton = extend_component('CopyLogButton', 'CopyButton', {
+    getText: function(){
+        var player = this.player();
+        if (!player.hola_logs)
+            return 'Can\'t find hola_logs method!';
+        return player.hola_logs();
+    },
     is_visible: is_wrapper_attached,
+});
+var CopyUrlButton = extend_component('CopyUrlButton', 'CopyButton', {
+    getText: function(){
+        var url = get_top_url();
+        if (this.options_.time)
+        {
+            var pos = Math.floor(this.player().currentTime());
+            var re = /(#(?:.*&)?t=)(\d*)/;
+            if (url.match(re))
+                url = url.replace(re, '$1'+pos);
+            else
+                url += (url.indexOf('#')!=-1 ? '&t=' : '#t=')+pos;
+        }
+        return url;
+    },
 });
 var InfoButton = extend_component('InfoButton', 'MenuItem', {
     handleClick: function(){
@@ -1124,6 +1141,24 @@ function local_storage_set(key, value){
 function local_storage_get(key){
     try { return vjs.utils.localStorage.getItem(key); }
     catch(e){ return null; }
+}
+function get_top_url(){
+    return window.top==window ? location.href : document.referrer;
+}
+function seek(player, pos){
+    player.one('loadeddata', function(){
+        if (player.techName_=='Html5')
+            return void player.currentTime(pos);
+        // XXX andrey: if seek immediately, video can stuck
+        // or play without sound, probably loadeddata is triggered
+        // when flash NetStream is not ready to seek yet
+        player.on('timeupdate', function on_timeupdate(){
+            if (!player.currentTime())
+                return;
+            player.off('timeupdate', on_timeupdate);
+            player.currentTime(pos);
+        });
+    });
 }
 
 vjs.plugin('settings', function(opt){
@@ -1207,6 +1242,9 @@ vjs.plugin('settings', function(opt){
             });
         }
         video.addChild('PopupMenu', vjs.mergeOptions(opt));
+        var url = get_top_url(), m;
+        if (m = url.match(/#(?:.*&)?t=(\d*)/))
+            seek(video, parseInt(m[1], 10));
     });
 });
 

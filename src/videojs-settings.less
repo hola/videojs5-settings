@@ -6,8 +6,6 @@
 @hd-glyph: ~'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iOXB4IiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAxMyA5IiB3aWR0aD0iMTNweCIgZmlsbD0iI2ZmZiIgZmlsbC1ydWxlPSJldmVub2RkIj4KICAgIDxwYXRoIGQ9Ik01LDcgTDYsNyBMNiw4IEw1LDggTDUsNyBaIE0xMCwzIEwxMCw0IEw4LDQgTDgsMyBMMTAsMyBaIE0zLDYgTDMsNSBMNSw1IEw1LDYgTDMsNiBaIE0yLDcgTDMsNyBMMyw4IEwyLDggTDIsNyBaIE03LDcgTDEwLDcgTDEwLDggTDcsOCBMNyw3IFogTTEwLDYgTDExLDYgTDExLDcgTDEwLDcgTDEwLDYgWiIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjY0NzEiIGZpbGwtcnVsZT0iZXZlbm9kZCIgLz48cGF0aCBkPSJNNSw3IEw1LDYgTDUsNSBMMyw1IEwzLDYgTDMsNyBMMiw3IEwyLDIgTDMsMiBMMyw0IEw1LDQgTDUsMiBMNiwyIEw2LDcgTDUsNyBaIE0xMSw2IEwxMCw2IEwxMCw3IEw3LDcgTDcsMiBMMTAsMiBMMTAsMyBMMTEsMyBMMTEsNiBaIE0xMCw0IEwxMCwzIEw4LDMgTDgsNCBMOCw2IEwxMCw2IEwxMCw0IFoiLz4KPC9zdmc+';
 @4k-glyph: ~'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iOXB4IiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAxMyA5IiB3aWR0aD0iMTNweCIgZmlsbD0iI2ZmZiIgZmlsbC1ydWxlPSJldmVub2RkIj4KICAgIDxwYXRoIGQ9Ik0xMCw0IEwxMSw0IEwxMSw1IEwxMCw1IEwxMCw0IFogTTEwLDcgTDExLDcgTDExLDggTDEwLDggTDEwLDcgWiBNOCw1IEwxMCw1IEwxMCw2IEw4LDYgTDgsNSBaIE03LDcgTDgsNyBMOCw4IEw3LDggTDcsNyBaIE01LDYgTDYsNiBMNiw3IEw1LDcgTDUsNiBaIE00LDcgTDUsNyBMNSw4IEw0LDggTDQsNyBaIE0yLDYgTDQsNiBMNCw3IEwyLDcgTDIsNiBaIE0zLDQgTDQsNCBMNCw1IEwzLDUgTDMsNCBaIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuNjQ3MSIgZmlsbC1ydWxlPSJldmVub2RkIiAvPjxwYXRoIGQ9Ik0xMSw1IEwxMSw3IEwxMCw3IEwxMCw2IEwxMCw1IEwxMSw1IFogTTEwLDUgTDgsNSBMOCw2IEw4LDcgTDcsNyBMNywyIEw4LDIgTDgsNCBMMTAsNCBMMTAsNSBaIE00LDQgTDMsNCBMMyw1IEw0LDUgTDQsNCBaIE00LDcgTDQsNiBMMiw2IEwyLDQgTDMsNCBMMywzIEw0LDMgTDQsMiBMNSwyIEw1LDUgTDYsNSBMNiw2IEw1LDYgTDUsNyBMNCw3IFogTTEwLDIgTDExLDIgTDExLDQgTDEwLDQgTDEwLDIgWiIvPgo8L3N2Zz4=';
 
-@context-menu-scale: 1.1;
-
 .vjs5-hola-skin {
     .vjs-rightclick-popup {
         color: @text-color-main;
@@ -205,8 +203,7 @@
             bottom: 3.9em;
         }
     }
-    .vjs-info-overlay,
-    .vjs-rightclick-popup {
+    .vjs-info-overlay {
         .border-radius();
         .background-color-with-alpha(@control-bg-color, @control-bg-alpha);
         .box-shadow(0.2em 0.2em 0.3em rgba(0, 0, 0, 0.5));
@@ -282,10 +279,13 @@
         position: absolute;
         z-index: 5;
         width: auto;
-        padding: 1em 0;
-        font-size: 100% * @context-menu-scale;
+        padding: 0.5em 0;
+        .background-color-with-alpha(@control-bg-color, @control-bg-alpha);
         .vjs-menu-item {
             cursor: pointer;
+            line-height: 2em;
+            padding: 0.2em 2em 0.2em 1em;
+            font-weight: bold;
         }
         .vjs-menu-item,
         .vjs-menu-item>.vjs-menu-link {
@@ -305,11 +305,8 @@
     }
     &.vjs-large,
     &.vjs-fullscreen:not(.vjs-small) {
-        .vjs-info-overlay, .vjs-settings-menu {
+        .vjs-info-overlay, .vjs-settings-menu, .vjs-rightclick-popup {
             font-size: 100% * @vjs-large-scale;
-        }
-        .vjs-rightclick-popup {
-            font-size: (100% * @context-menu-scale) * @vjs-large-scale;
         }
     }
     .vjs-control-bar .vjs-control {
