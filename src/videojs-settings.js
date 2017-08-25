@@ -546,6 +546,7 @@ var CaptionsOptionsMenu = extend_component('CaptionsOptionsMenu', 'SubMenu', {
             {key: 'edgeStyle', text: 'Text edge style', dict: d.edge, def: 0}
         ];
         this.reset();
+        this.load();
         SubMenu.call(this, player, options, parent);
         this.selectMenu = new SelectValueMenu(player, options, parent);
         this.on(this.selectMenu, 'selected', this.handleValueChange);
@@ -554,6 +555,25 @@ var CaptionsOptionsMenu = extend_component('CaptionsOptionsMenu', 'SubMenu', {
         player.removeChild(orig);
         orig.dispose();
         player.textTrackSettings = this;
+    },
+    save: function(){
+        local_storage_set('vjs5_captions_options',
+            JSON.stringify(this.getValues()));
+    },
+    load: function(){
+        var values;
+        try {
+            values = JSON.parse(local_storage_get('vjs5_captions_options'));
+        } catch(e){}
+        if (!values)
+            return;
+        this.params.forEach(function(p){
+            var value = p.dict.find(function(d){
+                return d.value==values[p.key];
+            });
+            if (value)
+                p.value = value;
+        });
     },
     reset: function(){
         this.params.forEach(function(p){ p.value = p.dict[p.def]; });
@@ -583,6 +603,7 @@ var CaptionsOptionsMenu = extend_component('CaptionsOptionsMenu', 'SubMenu', {
             this.reset();
             this.update();
             this.player().textTrackDisplay.updateDisplay();
+            this.save();
             return;
         }
         this.currentItem = item;
@@ -593,6 +614,7 @@ var CaptionsOptionsMenu = extend_component('CaptionsOptionsMenu', 'SubMenu', {
         this.currentItem.param.value = value;
         this.currentItem.contentLabel.innerHTML = value.text;
         this.player().textTrackDisplay.updateDisplay();
+        this.save();
     },
 });
 var SelectValueMenu = extend_component('SelectValueMenu', 'SubMenu', {
