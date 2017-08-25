@@ -375,7 +375,6 @@ var QualityMenuItem = extend_component('QualityMenuItem', 'MenuItem', {
     handleClick: function(){},
 });
 var SpeedSubMenu = extend_component('SpeedSubMenu', 'SubMenu', {
-    className: 'vjs-speed-submenu',
     title: 'Speed',
     constructor: function(player, options, parent){
         SubMenu.call(this, player, options, parent);
@@ -477,6 +476,7 @@ var CaptionsSubMenu = extend_component('CaptionsSubMenu', 'SubMenu', {
     },
 });
 var CaptionsOptionsMenu = extend_component('CaptionsOptionsMenu', 'SubMenu', {
+    className: 'vjs-captions-options-submenu',
     title: 'Options',
     addToMain: false,
     dict: {
