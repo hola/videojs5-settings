@@ -376,15 +376,19 @@ var QualityMenuItem = extend_component('QualityMenuItem', 'MenuItem', {
 });
 var SpeedSubMenu = extend_component('SpeedSubMenu', 'SubMenu', {
     title: 'Speed',
+    values: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2],
     constructor: function(player, options, parent){
+        this.supported = player.tech_ && player.tech_.featuresPlaybackRate;
         SubMenu.call(this, player, options, parent);
         this.on(player, 'ratechange', this.handleRateChange);
+        var rate = parseFloat(local_storage_get('vjs5_speed'));
+        if (this.supported && this.values.includes(rate))
+            player.playbackRate(rate);
         this.handleRateChange();
     },
     createItems: function(){
         var _this = this, player = this.player();
-        var rates = player.tech_ && player.tech_.featuresPlaybackRate ?
-            [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2] : [1];
+        var rates = this.supported ? this.values : [1];
         rates.forEach(function(rate){
             var item = new MenuItem(player, {
                 label: rate==1 ? 'Normal' : rate,
@@ -395,10 +399,11 @@ var SpeedSubMenu = extend_component('SpeedSubMenu', 'SubMenu', {
         });
     },
     handleItemClick: function(item){
-        var player = this.player();
+        var player = this.player(), rate = item.options_.rate;
         this.parent.back();
-        if (item.options_.rate!=player.playbackRate())
-            player.playbackRate(item.options_.rate);
+        if (rate!=player.playbackRate())
+            player.playbackRate(rate);
+        local_storage_set('vjs5_speed', rate);
     },
     handleRateChange: function(){
         var rate = this.player().playbackRate();
@@ -1091,6 +1096,13 @@ extend_component('CaptionsToggle', 'Button', {
             this.track && this.track.mode=='showing');
     },
 });
+function local_storage_set(key, value){
+    try { vjs.utils.localStorage.setItem(key, value); } catch(e){}
+}
+function local_storage_get(key){
+    try { return vjs.utils.localStorage.getItem(key); }
+    catch(e){ return null; }
+}
 
 vjs.plugin('settings', function(opt){
     var video = this;
@@ -1103,13 +1115,6 @@ vjs.plugin('settings', function(opt){
         about: true,
     }, opt);
     video.ready(function(){
-        function local_storage_set(key, value){
-            try { vjs.utils.localStorage.setItem(key, value); } catch(e){}
-        }
-        function local_storage_get(key){
-            try { return vjs.utils.localStorage.getItem(key); }
-            catch(e){ return null; }
-        }
         function sources_normalize(sources, label_sav){
             var i, source_def, source_sav;
             sources = sources.filter(function(e){ return e.src; });
