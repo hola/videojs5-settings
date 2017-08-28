@@ -435,9 +435,11 @@ var CaptionsSubMenu = extend_component('CaptionsSubMenu', 'SubMenu', {
         var opt_el = vjs.createEl('div', {className: 'vjs-minor-label',
             innerHTML: 'Options'});
         this.titleItem.el().appendChild(opt_el);
-        this.on(opt_el, ['touchstart', 'click'], function(event){
+        this.on(opt_el, ['touchstart', 'touchend', 'click'], function(event){
+            event.preventDefault();
             event.stopPropagation();
-            parent.next(this.optionsMenu);
+            if (event.type=='click' || event.type=='touchend')
+                parent.next(this.optionsMenu);
         });
         this.on(tt, 'addtrack', this.update);
         this.on(tt, 'removetrack', this.update);
