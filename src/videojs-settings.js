@@ -371,6 +371,7 @@ var QualityMenuItem = extend_component('QualityMenuItem', 'MenuItem', {
     handleClick: function(){},
 });
 var SpeedSubMenu = extend_component('SpeedSubMenu', 'SubMenu', {
+    className: 'vjs-speed-submenu',
     title: 'Speed',
     values: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2],
     constructor: function(player, options, parent){
@@ -378,7 +379,7 @@ var SpeedSubMenu = extend_component('SpeedSubMenu', 'SubMenu', {
         SubMenu.call(this, player, options, parent);
         this.on(player, 'ratechange', this.handleRateChange);
         var rate = parseFloat(local_storage_get('vjs5_speed'));
-        if (this.supported && this.values.includes(rate))
+        if (this.supported && this.values.indexOf(rate)!=-1)
             player.playbackRate(rate);
         this.handleRateChange();
     },
@@ -422,6 +423,7 @@ function get_captions_tracks(player){
     return tracks;
 }
 var CaptionsSubMenu = extend_component('CaptionsSubMenu', 'SubMenu', {
+    className: 'vjs-captions-submenu',
     title: 'Captions',
     constructor: function(player, options, parent){
         SubMenu.call(this, player, options, parent);
@@ -614,6 +616,7 @@ var CaptionsOptionsMenu = extend_component('CaptionsOptionsMenu', 'SubMenu', {
     },
 });
 var SelectValueMenu = extend_component('SelectValueMenu', 'SubMenu', {
+    className: 'vjs-select-value-submenu',
     addToMain: false,
     dict: [],
     show: function(opt){
@@ -697,8 +700,9 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
             _this.removeClass('vjs-lock-showing');
         }, 100);
     },
-    getSize: function(){
-        return {width: this.el_.offsetWidth, height: this.el_.offsetHeight};
+    getSize: function(el){
+        el = el||this.el_;
+        return {width: el.offsetWidth, height: el.offsetHeight};
     },
     setSize: function(size){
         this.el_.style.height = size ? size.height+'px' : '';
@@ -707,12 +711,9 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
     setActive: function(menu, no_transition){
         if (!no_transition && window.requestAnimationFrame)
         {
-            var _this = this, old_size = this.getSize();
-            this.el_.style.visibility = 'hidden';
+            var _this = this, new_size = this.getSize(menu.el());
+            this.setSize(this.getSize());
             window.requestAnimationFrame(function(){
-                var new_size = _this.getSize();
-                _this.setSize(old_size);
-                _this.el_.style.visibility = '';
                 _this.addClass('vjs-size-transition');
                 window.requestAnimationFrame(function(){
                     var on_end = function(){
@@ -1121,7 +1122,7 @@ extend_component('CaptionsToggle', 'Button', {
             this.show();
         else
             this.hide();
-        if (this.track && !tracks.includes(this.track))
+        if (this.track && tracks.indexOf(this.track)==-1)
             this.track = null;
         var current = tracks.find(function(t){ return t.mode=='showing'; });
         if (current)
