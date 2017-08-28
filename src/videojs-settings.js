@@ -40,7 +40,6 @@ extend_component('PopupMenu', 'Menu', {
         this.hide();
         var _this = this;
         var opt = this.options_;
-        var offset = opt.offset||5;
         _this.menuEnabled = true;
         this.addChild(new CopyUrlButton(player, {label: 'Copy video URL'}));
         this.addChild(new CopyUrlButton(player,
@@ -82,47 +81,36 @@ extend_component('PopupMenu', 'Menu', {
         function oncontextmenu(evt){
             evt.preventDefault();
             if (_this.popped)
-            {
-                _this.hide();
-                _this.popped = false;
-            }
-            else
-            {
-                _this.show();
-                var oX = evt.offsetX;
-                var oY = evt.offsetY;
-                var left_shift =
-                    _this.el_.offsetWidth+oX+offset-player_.el_.offsetWidth;
-                left_shift = Math.max(0, left_shift);
-                var top_shift =
-                    _this.el_.offsetHeight+oY+offset-player_.el_.offsetHeight;
-                top_shift = Math.max(0, top_shift);
-                oX = oX-left_shift;
-                oY = oY-top_shift;
-                _this.el_.style.top=oY+'px';
-                _this.el_.style.left=oX+'px';
-                _this.popped = true;
-                _this.check_items();
-            }
+                return void _this.hide();
+            _this.show();
+            _this.check_items();
+            var el = _this.el(), x = evt.clientX, y = evt.clientY;
+            var left_shift = x+el.offsetWidth-window.innerWidth+5;
+            left_shift = Math.max(0, left_shift);
+            var top_shift = y+el.offsetHeight-window.innerHeight+5;
+            top_shift = Math.max(0, top_shift);
+            var rect = _this.player().el().getBoundingClientRect();
+            el.style.left = Math.max(0, x-rect.left-left_shift)+'px';
+            el.style.top = Math.max(0, y-rect.top-top_shift)+'px';
         }
         player_.on('contextmenu', oncontextmenu);
         player_.on(['tap', 'click'], function(evt){
             if (_this.popped)
             {
                 _this.hide();
-                _this.popped = false;
                 evt.stopPropagation();
                 evt.preventDefault();
                 return false;
             }
         });
+        vjs.on(document, ['tap', 'click'], function(){
+            if (_this.popped)
+                _this.hide();
+        });
         player_.on('hola.wrapper_attached', this.check_items.bind(this));
         player_.on('hola.wrapper_detached', this.check_items.bind(this));
         this.children().forEach(function(item){
-            item.on(['tap', 'click'], function(){
-                _this.hide();
-                _this.popped = false;
-            });
+            item.on(['tap', 'click'], function(){ _this.hide(); });
         });
         player.enablePopupMenu = function(){
             if (!_this.menuEnabled)
@@ -141,6 +129,14 @@ extend_component('PopupMenu', 'Menu', {
                 _this.menuEnabled = false;
             }
         };
+    },
+    show: function(){
+        this.removeClass('vjs-hidden');
+        this.popped = true;
+    },
+    hide: function(){
+        this.addClass('vjs-hidden');
+        this.popped = false;
     },
     check_items: function(){
         this.children().forEach(function(item){
@@ -767,8 +763,8 @@ extend_component('SettingsButton', 'MenuButton', {
         return el;
     },
     buildCSSClass: function(){
-        var className = MenuButton.prototype.buildCSSClass.call(this);
-        return className+' vjs-settings-button';
+        return MenuButton.prototype.buildCSSClass.call(this)+
+            ' vjs-settings-button';
     },
     handleClick: function(){
         if (this.buttonPressed_)
