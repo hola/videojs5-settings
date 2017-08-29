@@ -41,9 +41,16 @@ extend_component('PopupMenu', 'Menu', {
         var _this = this;
         var opt = this.options_;
         _this.menuEnabled = true;
-        this.addChild(new CopyUrlButton(player, {label: 'Copy video URL'}));
-        this.addChild(new CopyUrlButton(player,
-            {label: 'Copy video URL at current time', time: true}));
+        if (opt.copy_url!==false)
+        {
+            this.addChild(new CopyUrlButton(player, {label: 'Copy video URL',
+                url: opt.copy_url}));
+        }
+        if (opt.copy_url!==false && opt.copy_url_with_time!==false)
+        {
+            this.addChild(new CopyUrlButton(player, {url: opt.copy_url,
+                label: 'Copy video URL at current time', time: true}));
+        }
         if (opt.embed_code)
         {
             this.addChild(new CopyButton(player, {label: 'Copy embed code',
@@ -1067,7 +1074,7 @@ var CopyLogButton = extend_component('CopyLogButton', 'CopyButton', {
 });
 var CopyUrlButton = extend_component('CopyUrlButton', 'CopyButton', {
     getText: function(){
-        var url = get_top_url();
+        var url = this.options_.url || get_top_url();
         if (this.options_.time)
         {
             var pos = Math.floor(this.player().currentTime());
