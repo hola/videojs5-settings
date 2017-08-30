@@ -7,10 +7,6 @@
 @4k-glyph: ~'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iOXB4IiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAxMyA5IiB3aWR0aD0iMTNweCIgZmlsbD0iI2ZmZiIgZmlsbC1ydWxlPSJldmVub2RkIj4KICAgIDxwYXRoIGQ9Ik0xMCw0IEwxMSw0IEwxMSw1IEwxMCw1IEwxMCw0IFogTTEwLDcgTDExLDcgTDExLDggTDEwLDggTDEwLDcgWiBNOCw1IEwxMCw1IEwxMCw2IEw4LDYgTDgsNSBaIE03LDcgTDgsNyBMOCw4IEw3LDggTDcsNyBaIE01LDYgTDYsNiBMNiw3IEw1LDcgTDUsNiBaIE00LDcgTDUsNyBMNSw4IEw0LDggTDQsNyBaIE0yLDYgTDQsNiBMNCw3IEwyLDcgTDIsNiBaIE0zLDQgTDQsNCBMNCw1IEwzLDUgTDMsNCBaIiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuNjQ3MSIgZmlsbC1ydWxlPSJldmVub2RkIiAvPjxwYXRoIGQ9Ik0xMSw1IEwxMSw3IEwxMCw3IEwxMCw2IEwxMCw1IEwxMSw1IFogTTEwLDUgTDgsNSBMOCw2IEw4LDcgTDcsNyBMNywyIEw4LDIgTDgsNCBMMTAsNCBMMTAsNSBaIE00LDQgTDMsNCBMMyw1IEw0LDUgTDQsNCBaIE00LDcgTDQsNiBMMiw2IEwyLDQgTDMsNCBMMywzIEw0LDMgTDQsMiBMNSwyIEw1LDUgTDYsNSBMNiw2IEw1LDYgTDUsNyBMNCw3IFogTTEwLDIgTDExLDIgTDExLDQgTDEwLDQgTDEwLDIgWiIvPgo8L3N2Zz4=';
 
 .vjs5-hola-skin {
-    .vjs-rightclick-popup {
-        color: @text-color-main;
-        z-index: 2;
-    }
     .vjs-settings-button {
         order: 19;
         &>.vjs-button-icon {
@@ -50,16 +46,49 @@
             background-image: url(@4k-glyph);
         }
     }
+    .vjs-menu {
+        .background-color-with-alpha(@control-bg-color, @control-bg-alpha);
+        white-space: nowrap;
+        .vjs-menu-item {
+            color: #eee;
+            font-size: 1em;
+            line-height: 3.3em;
+            height: 3.3em;
+            cursor: pointer;
+            padding: 0 3.6em 0 1.5em;
+            clear: both;
+            &[role=menuitemcheckbox] {
+                padding: 0 2.1em 0 3.6em;
+            }
+            &.vjs-selected:hover, &.vjs-selected:focus,
+            &:hover, &:focus {
+                color: #eee;
+                .background-color-with-alpha(#ffffff, 0.1);
+            }
+            .vjs-menu-item-label, .vjs-menu-link {
+                font-size: 1.3em;
+                font-weight: 500;
+            }
+            .vjs-menu-item-content {
+                font-size: 1.2em;
+                float: right;
+                margin-left: 3em;
+                .vjs-minor-label {
+                    padding-left: 0.2em;
+                    color: @text-color-minor;
+                    font-size: 0.92em;
+                }
+            }
+        }
+    }
     .vjs-menu.vjs-settings-menu {
         position: absolute;
         width: auto;
         right: 0.9em;
         bottom: 4.8em;
         z-index: 4;
-        font-weight: bold;
         visibility: hidden;
         overflow: hidden;
-        .background-color-with-alpha(@control-bg-color, @control-bg-alpha);
         opacity: 0;
         transition: opacity 100ms;
         will-change: width,height;
@@ -71,11 +100,8 @@
             opacity: 1;
         }
         &>.vjs-menu-content {
-            white-space: nowrap;
             width: auto;
             min-width: 9em;
-            max-height: 21em;
-            bottom: 2.75em;
             padding: 0.5em 0;
             transition: background 200ms ease;
             cursor: default;
@@ -94,60 +120,51 @@
         }
         &>.vjs-menu-content:not(.vjs-active-submenu) {
             position: fixed;
+            top: 0;
+            left: 0;
             visibility: hidden;
         }
-        .vjs-menu-item {
-            line-height: 2em;
-            cursor: pointer;
-            padding: 0.2em 2em 0.2em 1em;
-            &[role=menuitemcheckbox] {
-                padding: 0.2em 1.8em 0.2em 2em;
-            }
-            .vjs-menu-item-content {
-                float: right;
-                margin-left: 3em;
-                font-weight: 500;
-                .vjs-minor-label {
-                    padding-left: 0.2em;
-                    color: @text-color-minor;
-                    font-size: 90%;
-                }
-            }
-        }
         .vjs-main-submenu {
-            min-width: 20em;
+            min-width: 18em;
             .vjs-menu-item {
                 &.vjs-quality-hd,
                 &.vjs-quality-4k {
-                    padding-right: 3em;
+                    padding-right: 5.4em;
                 }
             }
         }
         .vjs-captions-options-submenu {
-            min-width: 25em;
+            min-width: 28em;
         }
         .vjs-menu-item.vjs-menu-item-next {
             text-align: left;
             background: transparent no-repeat;
-            background-position: right center;
-            background-size: 2em;
+            background-position: right 0.9em center;
+            background-size: 3.2em;
             background-image: url(@next-glyph);
-            &:hover {
-                color: #fff;
-                .background-color-with-alpha(#73859f, @control-bg-alpha);
+            &:hover, &:focus {
+                .background-color-with-alpha(#ffffff, 0.1);
             }
         }
+        .vjs-main-submenu .vjs-menu-item.vjs-quality-4k .vjs-menu-item-content,
         .vjs-main-submenu .vjs-menu-item.vjs-quality-hd .vjs-menu-item-content,
         .vjs-quality-submenu .vjs-menu-item.vjs-quality-hd,
-        .vjs-main-submenu .vjs-menu-item.vjs-quality-4k .vjs-menu-item-content,
         .vjs-quality-submenu .vjs-menu-item.vjs-quality-4k {
             &:after {
                 position: absolute;
-                font-size: 0.8em;
+                font-size: 0.9em;
                 color: #f10;
                 vertical-align: super;
                 margin-left: 0.2em;
                 margin-top: -0.5em;
+            }
+        }
+        .vjs-main-submenu .vjs-menu-item {
+            &.vjs-quality-4k .vjs-menu-item-content:after,
+            &.vjs-quality-hd .vjs-menu-item-content:after {
+                font-size: 0.75em;
+                margin-left: 0.16em;
+                margin-top: -0.41em;
             }
         }
         .vjs-main-submenu .vjs-menu-item.vjs-quality-hd .vjs-menu-item-content,
@@ -164,25 +181,22 @@
         }
         .vjs-quality-submenu .vjs-menu-item {
             text-align: right;
-            span {
-                color: @text-color-minor;
-                font-size: 90%;
-            }
         }
         .vjs-menu-item.vjs-submenu-title {
-            line-height: 2.5em;
+            line-height: 4.5em;
+            height: 4.5em;
             border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 0.2em 1.8em 0.2em 2em;
+            padding: 0 2.1em 0 3.6em;
             margin-bottom: 0.2em;
             text-align: left;
             background: transparent no-repeat;
-            background-position: left center;
-            background-size: 2em;
+            background-position: left 0.3em center;
+            background-size: 3.2em;
             background-image: url(@prev-glyph);
             .vjs-minor-label {
-                margin-left: 1em;
+                font-size: 1.3em;
+                margin-left: 1.3em;
                 text-decoration: underline;
-                font-weight: 500;
                 display: inline-block;
                 cursor: pointer;
             }
@@ -190,8 +204,10 @@
     }
     &.vjs-settings-expanded {
         .vjs-progress-control:hover .vjs-mouse-display-tooltip,
-        .vjs-thumbnail, .vjs-tooltip {
-            display:none;
+        .vjs-thumbnail,
+        .vjs-thumbnail-holder,
+        .vjs-tooltip {
+            display:none !important;
         }
     }
     &.vjs-live:not(.vjs-dvr) {
@@ -276,29 +292,12 @@
         z-index: 1113;
         width: auto;
         padding: 0.5em 0;
-        .background-color-with-alpha(@control-bg-color, @control-bg-alpha);
-        .vjs-menu-item {
-            cursor: pointer;
-            line-height: 2em;
-            padding: 0.2em 2em 0.2em 1em;
-            font-weight: bold;
-            white-space: nowrap;
-        }
-        .vjs-menu-item,
-        .vjs-menu-item>.vjs-menu-link {
-            padding: 0.2em 1em;
-        }
     }
     .vjs-menu .vjs-menu-item.vjs-selected {
-        color: #fff;
         background: transparent no-repeat;
-        background-position: 0.5em center;
-        background-size: 1.2em;
+        background-position: 0.8em center;
+        background-size: 1.5em;
         background-image: url(@done-glyph);
-        &:hover {
-            color: #fff;
-            .background-color-with-alpha(#73859f, @control-bg-alpha);
-        }
     }
     &.vjs-large,
     &.vjs-fullscreen:not(.vjs-small) {

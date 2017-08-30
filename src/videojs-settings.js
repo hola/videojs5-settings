@@ -427,7 +427,7 @@ function get_captions_tracks(player){
 }
 var CaptionsSubMenu = extend_component('CaptionsSubMenu', 'SubMenu', {
     className: 'vjs-captions-submenu',
-    title: 'Captions',
+    title: 'Subtitles/CC',
     constructor: function(player, options, parent){
         SubMenu.call(this, player, options, parent);
         var tt = player.textTracks();
@@ -716,7 +716,9 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
     setActive: function(menu, no_transition){
         if (!no_transition && window.requestAnimationFrame)
         {
-            var _this = this, new_size = this.getSize(menu.el());
+            var menu_el = menu.el();
+            menu_el.style.maxHeight = this.player().el().offsetHeight-80+'px';
+            var _this = this, new_size = this.getSize(menu_el);
             this.setSize(this.getSize());
             window.requestAnimationFrame(function(){
                 _this.addClass('vjs-size-transition');
@@ -998,7 +1000,17 @@ extend_component('NotifyOverlay', 'Overlay', {
         }, 3500);
     },
 });
+var ClickableComponent = vjs.getComponent('ClickableComponent');
 var MenuItem = vjs.getComponent('MenuItem');
+MenuItem.prototype.createEl = function(type, props, attrs){
+    props = Object.assign({
+        className: 'vjs-menu-item',
+        innerHTML: '<span class="vjs-menu-item-label">'+
+            this.localize(this.options_.label)+'</span>',
+        tabIndex: -1,
+    }, props);
+    return ClickableComponent.prototype.createEl('li', props, attrs);
+};
 var MenuItemLink = extend_component('MenuItemLink', 'MenuItem', {
     createEl: function(type, props){
         var prot = MenuItem.prototype;
@@ -1096,7 +1108,7 @@ var InfoButton = extend_component('InfoButton', 'MenuItem', {
 });
 var Button = vjs.getComponent('Button');
 extend_component('CaptionsToggle', 'Button', {
-    controlText_: 'Captions',
+    controlText_: 'Subtitles/closed captions',
     constructor: function(player, options){
         Button.call(this, player, options);
         this.addClass('vjs-captions-toggle');
