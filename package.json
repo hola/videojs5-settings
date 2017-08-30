@@ -1,6 +1,6 @@
 {
   "name": "@hola.org/videojs-settings",
-  "version": "0.0.3-62",
+  "version": "0.0.3-63",
   "description": "A settings button for Video.js",
   "main": "src/videojs-settings.js",
   "style": "dist/videojs-settings.css",
@@ -45,6 +45,6 @@
     "clipboard": "^1.5.10",
     "lodash": "4.17.4",
     "@hola.org/videojs-utils": ">=0.0.1-2 <0.0.1",
-    "@hola.org/videojs-hola-skin": ">=0.0.5-47 <0.0.5"
+    "@hola.org/videojs-hola-skin": "0.0.5-62"
   }
 }
