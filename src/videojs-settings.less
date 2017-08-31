@@ -311,40 +311,40 @@
         &.vjs-subtitles-button  {
             display: none;
         }
-        &.vjs-captions-toggle {
-            width: 3.6em;
-            margin-right: 0.4em;
-            order: 9;
-            opacity: 0.9;
-            font-family: 'VideoJS';
-            cursor: pointer;
-            &>.vjs-button-icon {
-                height: 100%;
-                width: 100%;
-                &>svg {
-                    fill: #fff;
-                }
-                &:after {
-                    content: '';
-                    position: absolute;
-                    bottom: 0.6em;
-                    left: 0;
-                    right: 0;
-                    height: 0.2em;
-                    width : 0;
-                    margin: 0 auto;
-                    border-radius: 0.2em;
-                    background-color: @active-color;
-                    transition: width 250ms ease-in-out;
-                }
+    }
+    .vjs-captions-toggle {
+        width: 3.6em;
+        margin-right: 0.4em;
+        order: 9;
+        opacity: 0.9;
+        font-family: 'VideoJS';
+        cursor: pointer;
+        &>.vjs-button-icon {
+            height: 100%;
+            width: 100%;
+            &>svg {
+                fill: #fff;
             }
-            &:hover,
-            &.vjs-pressed {
-                opacity: 1;
+            &:after {
+                content: '';
+                position: absolute;
+                bottom: 0.6em;
+                left: 0;
+                right: 0;
+                height: 0.2em;
+                width : 0;
+                margin: 0 auto;
+                border-radius: 0.2em;
+                background-color: @active-color;
+                transition: width 250ms ease-in-out;
             }
-            &.vjs-pressed>.vjs-button-icon:after {
-                width: 2em;
-            }
+        }
+        &:hover,
+        &.vjs-pressed {
+            opacity: 1;
+        }
+        &.vjs-pressed>.vjs-button-icon:after {
+            width: 2em;
         }
     }
 }
