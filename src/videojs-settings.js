@@ -475,9 +475,9 @@ var CaptionsSubMenu = extend_component('CaptionsSubMenu', 'SubMenu', {
         this.handleTrackChange();
     },
     handleTrackChange: function(){
-        var selected = this.items.find(function(item){
+        var selected = find(this.items, function(item){
             return item.options_.track && item.options_.track.mode=='showing';
-        }) || this.items.find(function(item){ return !item.options_track; });
+        }) || find(this.items, function(item){ return !item.options_track; });
         this.items.forEach(function(item){ item.selected(item==selected); });
         this.menuItem.contentLabel.innerHTML =
             selected ? selected.options_.label : '';
@@ -571,7 +571,7 @@ var CaptionsOptionsMenu = extend_component('CaptionsOptionsMenu', 'SubMenu', {
         if (!values)
             return;
         this.params.forEach(function(p){
-            var value = p.dict.find(function(d){
+            var value = find(p.dict, function(d){
                 return d.value==values[p.key];
             });
             if (value)
@@ -1141,12 +1141,12 @@ extend_component('CaptionsToggle', 'Button', {
             this.hide();
         if (this.track && tracks.indexOf(this.track)==-1)
             this.track = null;
-        var current = tracks.find(function(t){ return t.mode=='showing'; });
+        var current = find(tracks, function(t){ return t.mode=='showing'; });
         if (current)
             this.track = current;
         if (!this.track)
         {
-            this.track = tracks.find(function(t){ return t['default']; }) ||
+            this.track = find(tracks, function(t){ return t['default']; }) ||
                 tracks[0];
         }
         this.toggleClass('vjs-pressed',
