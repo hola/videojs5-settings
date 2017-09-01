@@ -241,7 +241,7 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
         for (var i=0; i<sources.length; i++)
         {
             var label = sources[i].label || (sources.length==1 ?
-                'Auto' : 'Source '+(i+1));
+                'Auto' : this.localize('Source')+' '+(i+1));
             var item = new QualityMenuItem(player, vjs.mergeOptions(
                 sources[i], {label: label, callback: quality.callback}));
             this.items.push(item);
@@ -313,8 +313,9 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
             current_label = cur ? cur.label : '';
         }
         var type = quality_type(current_label || selected_label);
-        this.menuItem.contentLabel.innerHTML = selected_label||'';
-        this.menuItem.minorLabel.innerHTML = current_label||'';
+        this.menuItem.contentLabel.innerHTML =
+            this.localize(selected_label)||'';
+        this.menuItem.minorLabel.innerHTML = this.localize(current_label)||'';
         this.menuItem.toggleClass('vjs-quality-hd', type=='hd');
         this.menuItem.toggleClass('vjs-quality-4k', type=='4k');
         this.parent.settings_button.toggleClass('vjs-quality-hd', type=='hd');
@@ -407,7 +408,8 @@ var SpeedSubMenu = extend_component('SpeedSubMenu', 'SubMenu', {
     },
     handleRateChange: function(){
         var rate = this.player().playbackRate();
-        this.menuItem.contentLabel.innerHTML = rate==1 ? 'Normal' : rate;
+        this.menuItem.contentLabel.innerHTML = rate==1 ?
+            this.localize('Normal') : rate;
         this.items.forEach(function(item){
             item.selected(item.options_.rate==rate);
         });
@@ -436,7 +438,7 @@ var CaptionsSubMenu = extend_component('CaptionsSubMenu', 'SubMenu', {
         this.optionsMenu = new CaptionsOptionsMenu(player, options, parent);
         this.parent.addSubMenu(this.optionsMenu);
         var opt_el = vjs.createEl('div', {className: 'vjs-minor-label',
-            innerHTML: 'Options'});
+            innerHTML: this.localize('Options')});
         this.titleItem.el().appendChild(opt_el);
         this.on(opt_el, ['touchstart', 'touchend', 'click'], function(event){
             event.preventDefault();
@@ -592,8 +594,10 @@ var CaptionsOptionsMenu = extend_component('CaptionsOptionsMenu', 'SubMenu', {
             var item = new MenuItem(player, {label: p.text});
             item.param = p;
             item.addClass('vjs-menu-item-next');
-            var span = vjs.createEl('span',
-                {className: 'vjs-menu-item-content', innerHTML: p.value.text});
+            var span = vjs.createEl('span', {
+                className: 'vjs-menu-item-content',
+                innerHTML: item.localize(p.value.text),
+            });
             item.contentLabel = span;
             item.el().insertBefore(span, item.el().firstChild);
             items.push(item);
@@ -906,7 +910,7 @@ extend_component('InfoOverlay', 'Overlay', {
         }
         var title = create_el('div', {
             className: 'vjs-info-overlay-title',
-            innerHTML: 'Technical info',
+            innerHTML: this.localize('Technical info'),
         });
         var close_btn = create_el('div', {className: 'vjs-info-overlay-x'});
         var close = this.toggle.bind(this, null, true);
@@ -920,9 +924,9 @@ extend_component('InfoOverlay', 'Overlay', {
         for (var i in this.info_data)
         {
             item = create_el('li', {className: 'vjs-info-overlay-list-item'});
-            title_text = this.info_data[i].title;
+            title_text = this.localize(this.info_data[i].title);
             if (this.info_data[i].units)
-                title_text += ' ['+this.info_data[i].units+']';
+                title_text += ' ['+this.localize(this.info_data[i].units)+']';
             title_text += ': ';
             item.appendChild(create_el('strong', {
                 innerHTML: title_text}));
@@ -975,11 +979,11 @@ extend_component('NotifyOverlay', 'Overlay', {
         }
         var title = create_el('div', {
             className: 'vjs-notify-overlay-title',
-            innerHTML: 'Issue report sent.',
+            innerHTML: this.localize('Issue report sent.'),
         });
         var content = create_el('div', {
             className: 'vjs-notify-overlay-content',
-            innerHTML: 'Thank you!',
+            innerHTML: this.localize('Thank you!'),
         });
         container.appendChild(title);
         container.appendChild(content);
@@ -1021,7 +1025,7 @@ var MenuItemLink = extend_component('MenuItemLink', 'MenuItem', {
         }, props));
         this.link = Component.prototype.createEl('a', {
             className: 'vjs-menu-link',
-            innerHTML: label,
+            innerHTML: this.localize(label),
         }, {
             target: '_blank',
             href: this.options_.href||'#',
