@@ -3,6 +3,7 @@
 require('@hola.org/videojs-utils');
 var Clipboard = require('clipboard');
 var find = require('lodash/find');
+var vtt = require('videojs-vtt.js');
 var settings_icon_svg = '<svg viewBox="0 0 36 36">'
     +'<path d="m 23.94,18.78 c .03,-0.25 .05,-0.51 .05,-0.78 0,'
     +'-0.27 -0.02,-0.52 -0.05,-0.78 l 1.68,-1.32 c .15,-0.12 .19,-0.33 .09,'
@@ -609,8 +610,7 @@ var CaptionsOptionsMenu = extend_component('CaptionsOptionsMenu', 'SubMenu', {
         {
             this.reset();
             this.update();
-            this.player().textTrackDisplay.updateDisplay();
-            this.save();
+            this.changed();
             return;
         }
         this.currentItem = item;
@@ -620,8 +620,20 @@ var CaptionsOptionsMenu = extend_component('CaptionsOptionsMenu', 'SubMenu', {
     handleValueChange: function(event, value){
         this.currentItem.param.value = value;
         this.currentItem.contentLabel.innerHTML = value.text;
-        this.player().textTrackDisplay.updateDisplay();
+        this.changed();
+    },
+    changed: function(){
         this.save();
+        var d = this.player().textTrackDisplay;
+        d.updateDisplay();
+        if (this.timeout)
+            this.clearTimeout(this.timeout);
+        if (d.el().textContent)
+            return;
+        var text = this.localize('Subtitles will look like this');
+        var fake_track = {activeCues: [new vtt.VTTCue(0, 0, text)]};
+        d.updateForTrack(fake_track);
+        this.timeout = this.setTimeout(function(){ d.updateDisplay(); }, 3000);
     },
 });
 var SelectValueMenu = extend_component('SelectValueMenu', 'SubMenu', {
