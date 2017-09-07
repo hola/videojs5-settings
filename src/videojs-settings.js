@@ -428,6 +428,9 @@ function get_captions_tracks(player){
     }
     return tracks;
 }
+function get_track_label(track){
+    return track ? track.label||track.language||track.kind : 'Off';
+}
 var CaptionsSubMenu = extend_component('CaptionsSubMenu', 'SubMenu', {
     className: 'vjs-captions-submenu',
     title: 'Subtitles/CC',
@@ -461,7 +464,7 @@ var CaptionsSubMenu = extend_component('CaptionsSubMenu', 'SubMenu', {
         {
             var track = tracks[i];
             var item = new MenuItem(player, {
-                label: track ? track.label||track.language||track.kind : 'Off',
+                label: get_track_label(track),
                 selectable: true,
                 track: track,
             });
@@ -1147,7 +1150,33 @@ extend_component('CaptionsToggle', 'Button', {
     handleClick: function(){
         if (!this.track)
             return;
-        this.track.mode = this.track.mode=='showing' ? 'disabled' : 'showing';
+        var enable = this.track.mode!='showing';
+        this.track.mode = enable ? 'showing' : 'disabled';
+        if (enable)
+            this.showHint();
+    },
+    showHint: function(){
+        var track;
+        if (!(track = this.track))
+            return;
+        var d = this.player().textTrackDisplay;
+        if (this.timeout)
+            this.clearTimeout(this.timeout);
+        var text = get_track_label(track)+'\n'+
+            this.localize('press {icon} to configure');
+        var cue = new vtt.VTTCue(0, 0, text);
+        cue.align = 'start';
+        cue.position = 30;
+        cue.line = 2;
+        var cues = [cue];
+        for (var i=0; i<track.activeCues.length; i++)
+            cues.push(track.activeCues[i]);
+        d.updateForTrack({activeCues: cues});
+        var svg = settings_icon_svg.replace(/viewBox="[^"]*"/,
+            'viewBox="6 6 24 24"');
+        cue.displayState.innerHTML = cue.displayState.innerHTML
+            .replace('{icon}', svg);
+        this.timeout = this.setTimeout(function(){ d.updateDisplay(); }, 3000);
     },
     update: function(){
         var tracks = get_captions_tracks(this.player());
