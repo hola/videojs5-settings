@@ -348,11 +348,17 @@
         }
     }
     .vjs-text-track-display {
+        &>div>div>div {
+            padding: 1px 0.3em;
+            border-radius: 0.1em;
+            -webkit-box-decoration-break: clone;
+            box-decoration-break: clone;
+        }
         svg {
-	    fill: #fff;
-	    height: 1em;
-	    width: 1em;
-	    vertical-align: bottom;
-	}
+            fill: #fff;
+            height: 1em;
+            width: 1em;
+            vertical-align: bottom;
+        }
     }
 }

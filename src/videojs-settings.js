@@ -1159,22 +1159,25 @@ extend_component('CaptionsToggle', 'Button', {
         var track;
         if (!(track = this.track))
             return;
-        var d = this.player().textTrackDisplay;
+        var d = this.player().textTrackDisplay, i;
         if (this.timeout)
             this.clearTimeout(this.timeout);
-        var text = get_track_label(track)+'\n'+
-            this.localize('press {icon} to configure');
-        var cue = new vtt.VTTCue(0, 0, text);
-        cue.align = 'start';
-        cue.position = 30;
-        cue.line = 2;
-        var cues = [cue];
-        for (var i=0; i<track.activeCues.length; i++)
+        var cues = [
+            new vtt.VTTCue(0, 0, get_track_label(track)),
+            new vtt.VTTCue(0, 0, this.localize('press {icon} to configure'))
+        ];
+        for (i=0; i<cues.length; i++)
+        {
+            cues[i].align = 'start';
+            cues[i].position = 28;
+            cues[i].line = 2+i;
+        }
+        for (i=0; i<track.activeCues.length; i++)
             cues.push(track.activeCues[i]);
         d.updateForTrack({activeCues: cues});
         var svg = settings_icon_svg.replace(/viewBox="[^"]*"/,
             'viewBox="6 6 24 24"');
-        cue.displayState.innerHTML = cue.displayState.innerHTML
+        cues[1].displayState.innerHTML = cues[1].displayState.innerHTML
             .replace('{icon}', svg);
         this.timeout = this.setTimeout(function(){ d.updateDisplay(); }, 3000);
     },
