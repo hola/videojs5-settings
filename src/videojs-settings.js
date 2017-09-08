@@ -42,6 +42,8 @@ extend_component('PopupMenu', 'Menu', {
         var _this = this;
         var opt = this.options_;
         _this.menuEnabled = true;
+        this.addChild(new PoweredBy(player, {label:
+            'Powered by Hola Player'}));
         if (opt.copy_url!==false)
         {
             this.addChild(new CopyUrlButton(player, {label: 'Copy video URL',
@@ -1031,6 +1033,13 @@ MenuItem.prototype.createEl = function(type, props, attrs){
     }, props);
     return ClickableComponent.prototype.createEl('li', props, attrs);
 };
+var PoweredBy = extend_component('PoweredBy', 'MenuItem', {
+    constructor: function(player, options){
+        options.label += ' '+window.hola_player.VERSION;
+        MenuItem.call(this, player, options);
+        this.addClass('vjs-powered-by');
+    },
+});
 var MenuItemLink = extend_component('MenuItemLink', 'MenuItem', {
     createEl: function(type, props){
         var prot = MenuItem.prototype;
