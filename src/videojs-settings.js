@@ -47,7 +47,8 @@ extend_component('PopupMenu', 'Menu', {
             this.addChild(new CopyUrlButton(player, {label: 'Copy video URL',
                 url: opt.copy_url}));
         }
-        if (opt.copy_url!==false && opt.copy_url_with_time!==false)
+        if (opt.copy_url!==false && opt.copy_url_with_time!==false &&
+            (!multiple_players()||opt.copy_url))
         {
             this.addChild(new CopyUrlButton(player, {url: opt.copy_url,
                 label: 'Copy video URL at current time', time: true}));
@@ -1226,6 +1227,9 @@ function seek(player, pos){
         });
     });
 }
+function multiple_players(){
+    return Object.keys(vjs.getPlayers()).length>1;
+}
 
 vjs.plugin('settings', function(opt){
     var video = this;
@@ -1309,7 +1313,7 @@ vjs.plugin('settings', function(opt){
         }
         video.addChild('PopupMenu', vjs.mergeOptions(opt));
         var url = get_top_url(), m;
-        if (m = url.match(/#(?:.*&)?t=(\d*)/))
+        if (!multiple_players() && (m = url.match(/#(?:.*&)?t=(\d*)/)))
             seek(video, parseInt(m[1], 10));
     });
 });
