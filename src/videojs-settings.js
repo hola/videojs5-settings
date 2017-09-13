@@ -997,7 +997,7 @@ extend_component('NotifyOverlay', 'Overlay', {
         }
         var title = create_el('div', {
             className: 'vjs-notify-overlay-title',
-            innerHTML: this.localize('Issue report sent.'),
+            innerHTML: this.localize('Issue report sent'),
         });
         var content = create_el('div', {
             className: 'vjs-notify-overlay-content',
@@ -1174,7 +1174,7 @@ extend_component('CaptionsToggle', 'Button', {
             this.clearTimeout(this.timeout);
         var cues = [
             new vtt.VTTCue(0, 0, get_track_label(track)),
-            new vtt.VTTCue(0, 0, this.localize('press {icon} to configure'))
+            new vtt.VTTCue(0, 0, this.localize('press %s to configure'))
         ];
         for (i=0; i<cues.length; i++)
         {
@@ -1188,7 +1188,7 @@ extend_component('CaptionsToggle', 'Button', {
         var svg = settings_icon_svg.replace(/viewBox="[^"]*"/,
             'viewBox="6 6 24 24"');
         cues[1].displayState.innerHTML = cues[1].displayState.innerHTML
-            .replace('{icon}', svg);
+            .replace('%s', svg);
         this.timeout = this.setTimeout(function(){ d.updateDisplay(); }, 3000);
     },
     update: function(){
