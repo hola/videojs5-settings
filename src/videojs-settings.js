@@ -739,7 +739,7 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
         if (!no_transition && window.requestAnimationFrame)
         {
             var menu_el = menu.el();
-            menu_el.style.maxHeight = this.player().el().offsetHeight-80+'px';
+            menu_el.style.maxHeight = this.player().el().offsetHeight-100+'px';
             var _this = this, new_size = this.getSize(menu_el);
             this.setSize(this.getSize());
             window.requestAnimationFrame(function(){
