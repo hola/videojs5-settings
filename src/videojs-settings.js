@@ -89,6 +89,17 @@ extend_component('PopupMenu', 'Menu', {
                 label: 'About Hola Player',
             }));
         }
+        function get_overflow_parent(el){
+            var parent = el;
+            while (parent = parent.parentElement)
+            {
+                if (!parent)
+                    return;
+                var style = window.getComputedStyle(parent);
+                if (style.overflowX!='visible' || style.overflowY!='visible')
+                    return parent;
+            }
+        }
         function oncontextmenu(evt){
             evt.preventDefault();
             if (_this.popped)
@@ -96,9 +107,18 @@ extend_component('PopupMenu', 'Menu', {
             _this.show();
             _this.check_items();
             var el = _this.el(), x = evt.clientX, y = evt.clientY;
-            var left_shift = x+el.offsetWidth-window.innerWidth+5;
+            var max_right = window.innerWidth;
+            var max_bottom = window.innerHeight;
+            var parent = get_overflow_parent(el);
+            if (parent)
+            {
+                var parent_rect = parent.getBoundingClientRect();
+                max_right = Math.min(max_right, parent_rect.right);
+                max_bottom = Math.min(max_bottom, parent_rect.bottom);
+            }
+            var left_shift = x+el.offsetWidth-max_right+5;
             left_shift = Math.max(0, left_shift);
-            var top_shift = y+el.offsetHeight-window.innerHeight+5;
+            var top_shift = y+el.offsetHeight-max_bottom+5;
             top_shift = Math.max(0, top_shift);
             var rect = _this.player().el().getBoundingClientRect();
             el.style.left = Math.max(0, x-rect.left-left_shift)+'px';
