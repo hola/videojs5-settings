@@ -292,7 +292,7 @@
     }
     .vjs-rightclick-popup {
         position: absolute;
-        z-index: 1113;
+        z-index: 6;
         width: auto;
         padding: 0.5em 0;
         .vjs-menu-item.vjs-powered-by,
@@ -307,6 +307,9 @@
             background-image: url(@hola-logo);
             cursor: default;
         }
+    }
+    &.vjs-ima-ad .vjs-rightclick-popup {
+        z-index: 1113;
     }
     .vjs-menu .vjs-menu-item.vjs-selected {
         background: transparent no-repeat;
