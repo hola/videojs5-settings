@@ -322,7 +322,8 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
             current_src = wrapper.player.get_url();
         var items = this.items, selected_label;
         items.forEach(function(item){
-            var selected = item.options_.src ? item.options_.src==current_src :
+            var selected = item.options_.src ?
+                cmp_url(item.options_.src, current_src) :
                 item.options_.level_id==_this.selectedLevel;
             item.selected(selected);
             if (selected)
@@ -1259,6 +1260,10 @@ function seek(player, pos){
 function multiple_players(){
     return Object.keys(vjs.getPlayers()).length>1;
 }
+function cmp_url(a, b){
+    var re = /^https?\:\/\//i;
+    return a.replace(re, '//')==b.replace(re, '//');
+}
 
 vjs.plugin('settings', function(opt){
     var video = this;
@@ -1305,7 +1310,7 @@ vjs.plugin('settings', function(opt){
                 var sources = opt.quality.sources;
                 for (var i=0; i<sources.length; i++)
                 {
-                    if (video.currentSrc()!=sources[i].src)
+                    if (!cmp_url(video.currentSrc(), sources[i].src))
                         continue;
                     local_storage_set(quality_key, sources[i].label);
                     break;
