@@ -85,7 +85,7 @@ extend_component('PopupMenu', 'Menu', {
         if (opt.about)
         {
             this.addChild(new MenuItemLink(player, {
-                href: 'https://holacdn.com/player',
+                href: 'https://holaspark.com/player',
                 label: 'About Hola Player',
             }));
         }
