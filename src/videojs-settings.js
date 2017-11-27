@@ -980,7 +980,7 @@ extend_component('InfoOverlay', 'Overlay', {
         this.update();
         player.on('timeupdate', function(){ _this.update(); });
         // force updates when player is paused
-        setInterval(function(){ _this.update(); }, 1000);
+        this.updateInterval = setInterval(function(){ _this.update(); }, 1000);
     },
     update: function(){
         var player = this.player_;
@@ -1002,6 +1002,10 @@ extend_component('InfoOverlay', 'Overlay', {
         this.update();
         this.visible = true;
         this.removeClass('vjs-hidden');
+    },
+    dispose: function(){
+        clearInterval(this.updateInterval);
+        Overlay.prototype.dispose.call(this);
     },
 });
 extend_component('NotifyOverlay', 'Overlay', {
