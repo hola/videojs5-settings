@@ -692,6 +692,25 @@ var SelectValueMenu = extend_component('SelectValueMenu', 'SubMenu', {
         this.items.forEach(function(i){ i.selected(i==item); });
     },
 });
+var get_ui_zoom = function(player){
+    var scale = 1;
+    if (player&&!player.hasClass('vjs-ios-skin'))
+        return scale;
+    var orientation = window.orientation;
+    if (orientation!==undefined)
+    {
+        orientation = orientation===90||orientation==-90 ? 'horizontal' :
+            'vertical';
+    }
+    var screen = window.screen;
+    if (!orientation||!screen)
+        return scale;
+    var width_available = orientation=='vertical' ? screen.availWidth :
+        screen.availHeight;
+    if (width_available)
+        scale = window.innerWidth/width_available;
+    return scale;
+};
 var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
     className: 'vjs-settings-menu',
     history: [],
@@ -708,6 +727,7 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
         var el = Component.prototype.createEl.call(this, 'div',
             {className: 'vjs-menu'});
         el.setAttribute('role', 'presentation');
+        el.style.zoom = get_ui_zoom(this.player_);
         return el;
     },
     update: function(){
@@ -760,7 +780,11 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
         if (!no_transition && window.requestAnimationFrame)
         {
             var menu_el = menu.el();
-            menu_el.style.maxHeight = this.player().el().offsetHeight-100+'px';
+            var ui_zoom = get_ui_zoom(this.player_);
+            this.el_.style.zoom = ui_zoom;
+            var offset = 100 + (ui_zoom>1 ? 15*ui_zoom : 0);
+            var max_height = (this.player().el().offsetHeight-offset)/ui_zoom;
+            menu_el.style.maxHeight = max_height+'px';
             var _this = this, new_size = this.getSize(menu_el);
             this.setSize(this.getSize());
             window.requestAnimationFrame(function(){
@@ -1060,7 +1084,9 @@ MenuItem.prototype.createEl = function(type, props, attrs){
 };
 var PoweredBy = extend_component('PoweredBy', 'MenuItem', {
     constructor: function(player, options){
-        options.label += ' '+window.hola_player.VERSION;
+        var ver = window.hola_player&&window.hola_player.VERSION;
+        if (ver)
+            options.label += ' '+ver;
         MenuItem.call(this, player, options);
         this.addClass('vjs-powered-by');
     },
@@ -1321,8 +1347,8 @@ vjs.plugin('settings', function(opt){
                 }
             });
         }
-        video.controlBar.addChild('SettingsButton', vjs.mergeOptions(opt));
         video.controlBar.addChild('CaptionsToggle', vjs.mergeOptions(opt));
+        video.controlBar.addChild('SettingsButton', vjs.mergeOptions(opt));
         if (opt.info)
             video.addChild('InfoOverlay');
         if (opt.report)
