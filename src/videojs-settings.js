@@ -709,7 +709,7 @@ var get_ui_zoom = function(player){
         screen.availHeight;
     if (width_available)
         scale = window.innerWidth/width_available;
-    return Math.min(3, Math.max(1, scale));
+    return scale;
 };
 var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
     className: 'vjs-settings-menu',
@@ -722,6 +722,16 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
         this.on(['tap', 'click', 'touchstart', 'touchend'], function(event){
             event.stopPropagation();
         });
+        var resize = this._resize = this.resize.bind(this);
+        player.on('resize', resize);
+        player.on('fullscreenchange', function(){ setTimeout(resize); });
+        window.addEventListener('resize', resize);
+        window.addEventListener('orientationchange', resize);
+    },
+    dispose: function(){
+        window.removeEventListener('resize', this._resize);
+        window.removeEventListener('orientationchange', this._resize);
+        Menu.prototype.dispose.call(this);
     },
     createEl: function(){
         var el = Component.prototype.createEl.call(this, 'div',
@@ -775,6 +785,12 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
     setSize: function(size){
         this.el_.style.height = size ? size.height+'px' : '';
         this.el_.style.width = size ? size.width+'px' : '';
+    },
+    resize: function(){
+        var ui_zoom = get_ui_zoom(this.player_);
+        this.el_.style.zoom = ui_zoom;
+        if (this.active)
+            this.setActive(this.active);
     },
     setActive: function(menu, no_transition){
         if (!no_transition && window.requestAnimationFrame)
