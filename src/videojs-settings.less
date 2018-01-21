@@ -414,42 +414,6 @@
     opacity: 1;
     transition: visibility 0.1s, opacity 0.1s;
 }
-.vjs-menu.vjs-settings-menu,
-.vjs-menu.vjs-rightclick-popup {
-    background: transparent;
-}
-.vjs-settings-button>.vjs-menu>.vjs-menu-content,
-.vjs-settings-menu>.vjs-menu-content,
-.vjs-info-overlay,
-.vjs-rightclick-popup {
-    background: transparent;
-    color: @ios-primary-color;
-    .box-shadow(none);
-    &, &:before, &:after {
-        border-radius: 8px;
-    }
-    &:before, &:after {
-        content: ' ';
-        display: block;
-        width: 100%;
-        height: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: 0 !important;
-        mix-blend-mode: lighten;
-    }
-    &:before {
-        background-color: rgba(0, 0, 0, 0.85);
-    }
-    &:after {
-        background-color: rgba(255, 255, 255, 0.14);
-    }
-    &>* {
-        position: relative;
-        z-index: 2;
-    }
-}
 .vjs-menu.vjs-settings-menu {
     bottom: 40px;
 }
@@ -463,8 +427,18 @@
 .vjs-settings-button>.vjs-menu>.vjs-menu-content {
     bottom: 20px;
 }
-.vjs-menu .vjs-menu-item.vjs-selected:hover,
-.vjs-menu .vjs-menu-item.vjs-selected:focus {
-    background-color: @ios-secondary-color;
+.vjs-menu>.vjs-menu-content {
+    &::-webkit-scrollbar {
+        width: 0;
+        background-color: transparent;
+    }
+    &::-webkit-scrollbar-track {
+        background-color: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: transparent;
+        border: none;
+        border-radius: 0;
+    }
 }
 }

@@ -709,7 +709,7 @@ var get_ui_zoom = function(player){
         screen.availHeight;
     if (width_available)
         scale = window.innerWidth/width_available;
-    return scale;
+    return Math.min(3, Math.max(1, scale));
 };
 var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
     className: 'vjs-settings-menu',
