@@ -380,6 +380,11 @@
     }
 }
 .vjs-ios-skin {
+&.vjs-fullscreen:not(.vjs-small) {
+    .vjs-info-overlay, .vjs-settings-menu, .vjs-rightclick-popup {
+        font-size: 100%;
+    }
+}
 .vjs-settings-button {
     width: 23px;
 }
@@ -413,6 +418,10 @@
     visibility: visible;
     opacity: 1;
     transition: visibility 0.1s, opacity 0.1s;
+}
+.vjs-menu.vjs-settings-menu,
+.vjs-menu.vjs-rightclick-popup {
+    background: transparent;
 }
 .vjs-menu.vjs-settings-menu {
     bottom: 40px;
