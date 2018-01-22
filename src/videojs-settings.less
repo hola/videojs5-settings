@@ -419,21 +419,55 @@
     opacity: 1;
     transition: visibility 0.1s, opacity 0.1s;
 }
+.vjs-menu-item.vjs-submenu-title,
+.vjs-menu.vjs-settings-menu .vjs-menu-item,
+.vjs-menu.vjs-settings-menu .vjs-menu-item.vjs-submenu-title,
+.vjs-menu.vjs-rightclick-popup .vjs-menu-item {
+    height: @ios-controls-bar-height;
+    line-height: @ios-controls-bar-height;
+    padding-top: 0;
+    padding-bottom: 0;
+}
 .vjs-menu.vjs-settings-menu,
 .vjs-menu.vjs-rightclick-popup {
     background: transparent;
 }
+.vjs-rightclick-popup {
+    padding: 0;
+    &, &:before, &:after {
+        background: transparent;
+        box-shadow: none;
+    }
+}
+.vjs-rightclick-popup .vjs-menu-item,
+.vjs-rightclick-popup .vjs-menu-item:hover,
+.vjs-rightclick-popup .vjs-menu-item.vjs-powered-by,
+.vjs-rightclick-popup .vjs-menu-item.vjs-powered-by:hover {
+    background-color: transparent;
+}
+.vjs-rightclick-popup .vjs-menu-item.vjs-powered-by,
+.vjs-rightclick-popup .vjs-menu-item.vjs-powered-by:hover {
+    height: 45px;
+    line-height: 45px;
+}
 .vjs-menu.vjs-settings-menu {
+    right: 6px;
     bottom: 40px;
 }
 .vjs-info-overlay {
     left: 60px;
     top: 50px;
+    background: transparent;
+    box-shadow: none;
 }
 .vjs-info-overlay>.vjs-info-overlay-x {
     position: absolute;
 }
-.vjs-settings-button>.vjs-menu>.vjs-menu-content {
+.vjs-menu.vjs-settings-menu>.vjs-menu-content:not(.vjs-active-submenu),
+.vjs-menu.vjs-settings-menu>.vjs-menu-content,
+.vjs-control>.vjs-menu>.vjs-menu-content {
+    padding: 0;
+    top: auto;
     bottom: 20px;
 }
 .vjs-menu>.vjs-menu-content {
