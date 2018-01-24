@@ -192,7 +192,14 @@ var SubMenu = extend_component('SubMenu', 'Menu', {
         var el = Component.prototype.createEl.call(this, 'div',
             {className: 'vjs-menu-content'});
         el.setAttribute('role', 'menu');
+        this.ul = Component.prototype.createEl('ul',
+            {className: 'vjs-menu-submenu'});
+        el.appendChild(this.ul);
         return el;
+    },
+    addItem: function(component){
+        Menu.prototype.addItem.call(this, component);
+        this.ul.appendChild(component.el_);
     },
     createTitleItem: function(){
         if (!this.title)
@@ -229,6 +236,7 @@ var SubMenu = extend_component('SubMenu', 'Menu', {
             this.createItems();
         this.items.forEach(function(item){
             _this.addChild(item);
+            _this.ul.appendChild(item.el_);
             if (_this.handleItemClick)
             {
                item.on(['tap', 'click'], _this.handleItemClick.bind(_this,
@@ -747,7 +755,10 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
     addSubMenu: function(menu){
         this.addChild(menu);
         if (menu.menuItem)
+        {
             this.mainMenu.addChild(menu.menuItem);
+            this.mainMenu.ul.appendChild(menu.menuItem.el_);
+        }
     },
     createItems: function(){
         this.mainMenu = new SubMenu(this.player_, this.options_, this);
@@ -798,9 +809,11 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
             var menu_el = menu.el();
             var ui_zoom = get_ui_zoom(this.player_);
             this.el_.style.zoom = ui_zoom;
-            var offset = 100 + (ui_zoom>1 ? 15*ui_zoom : 0);
-            var max_height = (this.player().el().offsetHeight-offset)/ui_zoom;
-            menu_el.style.maxHeight = max_height+'px';
+            var title_offset = menu.titleItem ?
+                this.getSize(menu.titleItem.el_).height : 0;
+            var offset = 100/ui_zoom+(ui_zoom>1 ? 15 : 0)+title_offset;
+            var max_height = (this.player().el().offsetHeight)/ui_zoom - offset;
+            menu.ul.style.maxHeight = max_height+'px';
             var _this = this, new_size = this.getSize(menu_el);
             this.setSize(this.getSize());
             window.requestAnimationFrame(function(){
