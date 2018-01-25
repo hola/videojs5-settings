@@ -178,22 +178,50 @@ extend_component('PopupMenu', 'Menu', {
 });
 var SubMenu = extend_component('SubMenu', 'Menu', {
     addToMain: true,
+    item_count: 17,
     constructor: function(player, options, parent){
-        Menu.call(this, player, options);
+        var picker_enabled = true;
+        if (options&&options.picker!==undefined)
+            picker_enabled = options.picker;
+        this.picker_mode_wanted = picker_enabled &&
+            player&&player.hasClass('vjs-ios-skin');
+        this.picker_mode = this.picker_mode_wanted;
+        if (!this.picker_mode)
+            this.getHeight = undefined;
         this.items = [];
+        this.picker_items = [];
         this.parent = parent;
+        this.line_height = options&&options.line_height||31;
+        this.radius = 60;
+        this.radius_ratio = this.radius/this.item_count;
+        Menu.call(this, player, options);
         this.createMenuItem();
         this.createTitleItem();
         if (this.className)
             this.addClass(this.className);
         this.update();
+        this.handleTouch();
     },
     createEl: function(){
+        var class_name = 'vjs-menu-content';
+        if (this.picker_mode)
+            class_name += ' vjs-picker';
         var el = Component.prototype.createEl.call(this, 'div',
-            {className: 'vjs-menu-content'});
+            {className: class_name});
         el.setAttribute('role', 'menu');
         this.ul = Component.prototype.createEl('ul',
             {className: 'vjs-menu-submenu'});
+        if (this.picker_mode)
+        {
+            this.wrapper = Component.prototype.createEl('div', {
+            className: 'vjs-picker-wrapper'});
+            var container = Component.prototype.createEl('div', {
+                className: 'vjs-picker-container'});
+            container.appendChild(this.ul);
+            this.wrapper.appendChild(container);
+            el.appendChild(this.wrapper);
+            return el;
+        }
         el.appendChild(this.ul);
         return el;
     },
@@ -228,26 +256,131 @@ var SubMenu = extend_component('SubMenu', 'Menu', {
         item.on(['tap', 'click'], function(){
             _this.parent.next(_this); });
     },
+    getHeight: function(){
+        var title_offset = this.titleItem ?
+            this.titleItem.el_.offsetHeight : 0;
+        var max_height = get_max_height(this.player_)-title_offset;
+        return Math.min(max_height, this.picker ? 90 :
+            (this.items.length||this.children_.length*this.line_height));
+    },
+    insert_item: function(item){
+        var angle = item.angle;
+        item = item.item||item;
+        var handle_item = item;
+        if (this.picker_mode)
+        {
+            handle_item = new MenuItem(this.player_,
+                vjs.mergeOptions({}, item.options_));
+            handle_item.el_.style.transform = 'rotateX('+(-angle)+
+                'deg) translateZ('+this.radius+'px)';
+            handle_item.selected(item.hasClass('vjs-selected'));
+            this.picker_items.push(handle_item);
+        }
+        this.addChild(handle_item);
+        this.ul.appendChild(handle_item.el_);
+        var _this = this;
+        handle_item.on(['tap', 'click'], function(e){
+            e.stopImmediatePropagation();
+            if (_this.handleItemClick)
+                _this.handleItemClick(item);
+            if (_this.picker_mode)
+                _this.update();
+        });
+    },
+    // XXX alexeym: cleanup all picker code
     update: function(){
         var _this = this;
-        this.items.forEach(function(item){ _this.removeChild(item); });
+        this.items.forEach(function(item){
+            _this.removeChild(item);
+            if (item.el_.parentNode)
+                item.el_.parentNode.removeChild(item.el_);
+        });
         this.items = [];
+        this.picker_items.forEach(function(child){
+            child.dispose&&child.dispose(); });
+        this.picker_items = [];
         if (this.createItems)
             this.createItems();
-        this.items.forEach(function(item){
-            _this.addChild(item);
-            _this.ul.appendChild(item.el_);
-            if (_this.handleItemClick)
-            {
-               item.on(['tap', 'click'], _this.handleItemClick.bind(_this,
-                   item));
-            }
+        var items_count = this.items.length;
+        if (!items_count||items_count<3)
+            this.picker_mode = false;
+        else
+            this.picker_mode = this.picker_mode_wanted;
+        if (!this.picker_mode)
+            return this.items.forEach(this.insert_item.bind(this));
+        var ul_height = this.getHeight();
+        this.wrapper.style.height = ul_height+'px';
+        this.item_count = this.items.length*2;
+        var radius = this.radius = this.radius_ratio*this.item_count;
+        var selected = this.items.findIndex(function(item){
+            return item.hasClass('vjs-selected'); });
+        if (selected==-1)
+            selected = 0;
+        this.theta = 360/this.item_count;
+        this.drum_rotate = selected*this.theta;
+        this.ul.style.transform = 'translateZ(-'+radius+
+            'px) rotateX('+this.drum_rotate+'deg)';
+        var visible = [];
+        var l = this.items.length;
+        for (var i=0, index=0; i<this.item_count;i++)
+        {
+            var offset = Math.floor(i/l)*l;
+            var data_index = i-offset;
+            var item = this.items[data_index];
+            var angle = this.theta * index;
+            visible.push({item: item, angle: angle});
+            index++;
+        }
+        visible.forEach(this.insert_item.bind(this));
+    },
+    handleTouch: function(){
+        if (!this.picker_mode||!this.ul)
+            return;
+        var _this = this, position;
+        var theta = this.theta;
+        var radius = this.radius;
+        var step_height = this.line_height;
+        this.on('touchstart', function(event){
+            if (!event.touches.length)
+                return;
+            position = event.touches[0].pageY;
+            _this.addClass('vjs-rotate-transition');
         });
+        this.on('touchmove', function(event){
+            if (!_this.picker_mode||!_this.ul||position===null)
+                return;
+            event.preventDefault();
+            event.stopPropagation();
+            var ydiff = event.touches[0].pageY - position;
+            var steps = Math.trunc(ydiff/step_height);
+            if (!steps)
+                return;
+            position = event.touches[0].pageY;
+            _this.drum_rotate -= steps*theta;
+            _this.ul.style.transform = 'translateZ(-'+radius+
+                'px) rotateX('+_this.drum_rotate+'deg)';
+        });
+        var stop_touch = function(){
+            _this.removeClass('vjs-rotate-transition');
+            var index = _this.get_rotate_index();
+            _this.picker_items[index].trigger('tap');
+            position = null;
+        };
+        this.on('touchend', stop_touch);
+        this.on('touchcancel', stop_touch);
+        this.on('touchleave', stop_touch);
+    },
+    get_rotate_index: function(){
+        var index = Math.round(this.drum_rotate / this.theta);
+        var offset = Math.trunc(index/this.item_count)*this.item_count;
+        index = index-offset;
+        return index<0 ? this.item_count+index : index;
     },
 });
 var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
     className: 'vjs-quality-submenu',
     title: 'Quality',
+    picker: true,
     constructor: function(player, options, parent){
         var _this = this, tech = player.tech_;
         SubMenu.call(this, player, options, parent);
@@ -411,6 +544,7 @@ var SpeedSubMenu = extend_component('SpeedSubMenu', 'SubMenu', {
     className: 'vjs-speed-submenu',
     title: 'Speed',
     values: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2],
+    picker: true,
     constructor: function(player, options, parent){
         this.supported = player.tech_ && player.tech_.featuresPlaybackRate;
         SubMenu.call(this, player, options, parent);
@@ -431,10 +565,12 @@ var SpeedSubMenu = extend_component('SpeedSubMenu', 'SubMenu', {
             });
             _this.items.push(item);
         });
+        this.handleRateChange();
     },
     handleItemClick: function(item){
         var player = this.player(), rate = item.options_.rate;
-        this.parent.back();
+        if (!this.picker_mode)
+            this.parent.back();
         if (rate!=player.playbackRate())
             player.playbackRate(rate);
         local_storage_set('vjs5_speed', rate);
@@ -719,6 +855,11 @@ var get_ui_zoom = function(player){
         scale = window.innerWidth/width_available;
     return scale;
 };
+var get_max_height = function(player){
+    var ui_zoom = get_ui_zoom(player);
+    var offset = 100/ui_zoom+(ui_zoom>1 ? 13 : 0);
+    return (player.el().offsetHeight)/ui_zoom - offset;
+};
 var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
     className: 'vjs-settings-menu',
     history: [],
@@ -756,12 +897,13 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
         this.addChild(menu);
         if (menu.menuItem)
         {
-            this.mainMenu.addChild(menu.menuItem);
-            this.mainMenu.ul.appendChild(menu.menuItem.el_);
+            this.mainMenu.addItem(menu.menuItem);
+            //this.mainMenu.ul.appendChild(menu.menuItem.el_);
         }
     },
     createItems: function(){
-        this.mainMenu = new SubMenu(this.player_, this.options_, this);
+        this.mainMenu = new SubMenu(this.player_,
+            vjs.mergeOptions({picker: false}, this.options_), this);
         this.mainMenu.addClass('vjs-main-submenu');
         this.addChild(this.mainMenu);
         var menus = [SpeedSubMenu, CaptionsSubMenu, QualitySubMenu];
@@ -811,10 +953,12 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
             this.el_.style.zoom = ui_zoom;
             var title_offset = menu.titleItem ?
                 this.getSize(menu.titleItem.el_).height : 0;
-            var offset = 100/ui_zoom+(ui_zoom>1 ? 15 : 0)+title_offset;
-            var max_height = (this.player().el().offsetHeight)/ui_zoom - offset;
+            var max_height = get_max_height(this.player_)-title_offset;
             menu.ul.style.maxHeight = max_height+'px';
-            var _this = this, new_size = this.getSize(menu_el);
+            var _this = this;
+            var new_size = this.getSize(menu_el);
+            if (menu.getHeight)
+                new_size.height = menu.getHeight()+title_offset;
             this.setSize(this.getSize());
             window.requestAnimationFrame(function(){
                 _this.addClass('vjs-size-transition');
@@ -831,6 +975,8 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
             });
         }
         this.active = menu;
+        if (menu.update)
+            menu.update();
         this.children().forEach(function(item){
             item.toggleClass('vjs-active-submenu', item==menu);
         });

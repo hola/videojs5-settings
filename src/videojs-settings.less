@@ -471,6 +471,72 @@
 .vjs-menu.vjs-settings-menu .vjs-menu-submenu {
     margin-top: @ios-controls-bar-height;
 }
+.vjs-picker-wrapper {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+.vjs-picker>.vjs-picker-wrapper {
+    margin-top: @ios-controls-bar-height;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    overflow: hidden;
+    &>.vjs-picker-container {
+        position: relative;
+        display: block;
+        width: 100%;
+        height: @ios-controls-bar-height;
+        border: 1px solid rgba(0, 0, 0, 0);
+        border-left: none;
+        border-right: none;
+        overflow: visible;
+        -webkit-perspective: 1100px;
+        perspective: 1100px;
+        transition: border 0.2s;
+    }
+    &>.vjs-picker-container>.vjs-menu-submenu {
+        position: relative;
+        margin: 0;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        border-top: 0;
+        overflow: visible;
+        transform-style: preserve-3d;
+        -webkit-transform-style: preserve-3d;
+    }
+    &>.vjs-picker-container>.vjs-menu-submenu>.vjs-menu-item {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        opacity: 0.5;
+        color: @ios-secondary-color;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        &.vjs-selected:hover, &.vjs-selected:focus,
+        &:hover, &:focus {
+            background: transparent;
+        }
+        &[role=menuitemcheckbox] {
+            padding: 0 2.1em;
+        }
+        &.vjs-selected {
+            background: transparent;
+            opacity: 1;
+            color: @ios-primary-color;
+        }
+    }
+}
+.vjs-rotate-transition .vjs-menu-submenu {
+    transition: transform 0.2s linear;
+}
+.vjs-rotate-transition>.vjs-picker-wrapper>.vjs-picker-container {
+    border-color: rgba(255, 255, 255, 0.3);
+}
 .vjs-info-overlay {
     left: 60px;
     top: 50px;
