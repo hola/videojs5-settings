@@ -302,7 +302,7 @@ var SubMenu = extend_component('SubMenu', 'Menu', {
         if (this.createItems)
             this.createItems();
         var items_count = this.items.length;
-        if (!items_count||items_count<3)
+        if (!items_count||items_count<2)
             this.picker_mode = false;
         else
             this.picker_mode = this.picker_mode_wanted;
@@ -310,7 +310,7 @@ var SubMenu = extend_component('SubMenu', 'Menu', {
             return this.items.forEach(this.insert_item.bind(this));
         var ul_height = this.getHeight();
         this.wrapper.style.height = ul_height+'px';
-        this.item_count = this.items.length*2;
+        this.item_count = items_count * (items_count<4 ? 3 : 2);
         var radius = this.radius = this.radius_ratio*this.item_count;
         var selected = this.items.findIndex(function(item){
             return item.hasClass('vjs-selected'); });
@@ -321,10 +321,9 @@ var SubMenu = extend_component('SubMenu', 'Menu', {
         this.ul.style.transform = 'translateZ(-'+radius+
             'px) rotateX('+this.drum_rotate+'deg)';
         var visible = [];
-        var l = this.items.length;
         for (var i=0, index=0; i<this.item_count;i++)
         {
-            var offset = Math.floor(i/l)*l;
+            var offset = Math.floor(i/items_count)*items_count;
             var data_index = i-offset;
             var item = this.items[data_index];
             var angle = this.theta * index;
@@ -336,11 +335,14 @@ var SubMenu = extend_component('SubMenu', 'Menu', {
     handleTouch: function(){
         if (!this.picker_mode||!this.ul)
             return;
-        var _this = this, position;
+        var _this = this, position = null;
         var theta = this.theta;
         var radius = this.radius;
         var step_height = this.line_height;
         this.on('touchstart', function(event){
+            position = null;
+            if (event.srcElement.parentNode===_this.el)
+                return;
             if (!event.touches.length)
                 return;
             position = event.touches[0].pageY;
@@ -361,6 +363,8 @@ var SubMenu = extend_component('SubMenu', 'Menu', {
                 'px) rotateX('+_this.drum_rotate+'deg)';
         });
         var stop_touch = function(){
+            if (position===null)
+                return;
             _this.removeClass('vjs-rotate-transition');
             var index = _this.get_rotate_index();
             _this.picker_items[index].trigger('tap');
@@ -384,6 +388,16 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
     constructor: function(player, options, parent){
         var _this = this, tech = player.tech_;
         SubMenu.call(this, player, options, parent);
+        var quality = this.options_.quality;
+        var sources = quality && quality.sources ? quality.sources :
+            player.options_.sources;
+        if (sources&&sources.length>1)
+        {
+            var def_source = sources.find(function(source){
+                return source['default']; });
+            if (def_source&&def_source.src);
+                this.player_.src(def_source.src);
+        }
         this.one(player, 'play', this.updateSelected);
         this.on(player, 'resolutionchange', this.updateSelected);
         this.updateSelected();
@@ -535,8 +549,6 @@ var QualityMenuItem = extend_component('QualityMenuItem', 'MenuItem', {
         var qt;
         if (qt = quality_type(options.label))
             this.addClass('vjs-quality-'+qt);
-        if (options['default'])
-            this.player_.src(options.src);
     },
     handleClick: function(){},
 });
@@ -896,10 +908,7 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
     addSubMenu: function(menu){
         this.addChild(menu);
         if (menu.menuItem)
-        {
             this.mainMenu.addItem(menu.menuItem);
-            //this.mainMenu.ul.appendChild(menu.menuItem.el_);
-        }
     },
     createItems: function(){
         this.mainMenu = new SubMenu(this.player_,
