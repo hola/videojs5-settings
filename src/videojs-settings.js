@@ -312,8 +312,9 @@ var SubMenu = extend_component('SubMenu', 'Menu', {
         this.wrapper.style.height = ul_height+'px';
         this.item_count = items_count * (items_count<4 ? 3 : 2);
         var radius = this.radius = this.radius_ratio*this.item_count;
-        var selected = this.items.findIndex(function(item){
-            return item.hasClass('vjs-selected'); });
+        var selected = this.items.filter(function(item){
+            return item.hasClass('vjs-selected'); })[0];
+        selected = selected ? this.items.indexOf(selected) : -1;
         if (selected==-1)
             selected = 0;
         this.theta = 360/this.item_count;
@@ -393,9 +394,9 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
             player.options_.sources;
         if (sources&&sources.length>1)
         {
-            var def_source = sources.find(function(source){
-                return source['default']; });
-            if (def_source&&def_source.src);
+            var def_source = sources.filter(function(source){
+                return source['default']; })[0];
+            if (def_source&&def_source.src)
                 this.player_.src(def_source.src);
         }
         this.one(player, 'play', this.updateSelected);
