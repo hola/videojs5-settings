@@ -426,6 +426,7 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
                 sources[i], {label: label, callback: quality.callback}));
             this.items.push(item);
         }
+        this.updateSelected();
     },
     handleItemClick: function(item){
         var player = this.player();
@@ -831,9 +832,8 @@ var SelectValueMenu = extend_component('SelectValueMenu', 'SubMenu', {
         this.createTitleItem();
         this.dict = opt.dict;
         this.update();
-        this.items.forEach(function(item){
-            item.selected(item.value==opt.selected);
-        });
+        this.value_selected = opt.selected;
+        this.updateSelected();
         this.parent.next(this);
     },
     createItems: function(){
@@ -843,10 +843,16 @@ var SelectValueMenu = extend_component('SelectValueMenu', 'SubMenu', {
             item.value = d;
             items.push(item);
         });
+        this.updateSelected();
+    },
+    updateSelected: function(){
+        this.items.forEach(function(i){
+            i.selected(i.value==this.value_selected); });
     },
     handleItemClick: function(item){
         this.trigger('selected', item.value);
-        this.items.forEach(function(i){ i.selected(i==item); });
+        this.value_selected = item.value;
+        this.updateSelected();
     },
 });
 var get_ui_zoom = function(player){
