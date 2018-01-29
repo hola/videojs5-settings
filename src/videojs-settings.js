@@ -334,18 +334,15 @@ var SubMenu = extend_component('SubMenu', 'Menu', {
         visible.forEach(this.insert_item.bind(this));
     },
     handleTouch: function(){
-        if (!this.picker_mode||!this.ul)
-            return;
         var _this = this, position = null;
-        var theta = this.theta;
-        var radius = this.radius;
         var step_height = this.line_height;
         this.on('touchstart', function(event){
             position = null;
-            if (event.srcElement.parentNode===_this.el)
+            if (!_this.picker_mode||!_this.ul||!event.touches.length||
+                event.srcElement.parentNode===_this.el)
+            {
                 return;
-            if (!event.touches.length)
-                return;
+            }
             position = event.touches[0].pageY;
             _this.addClass('vjs-rotate-transition');
         });
@@ -359,8 +356,8 @@ var SubMenu = extend_component('SubMenu', 'Menu', {
             if (!steps)
                 return;
             position = event.touches[0].pageY;
-            _this.drum_rotate -= steps*theta;
-            _this.ul.style.transform = 'translateZ(-'+radius+
+            _this.drum_rotate -= steps*_this.theta;
+            _this.ul.style.transform = 'translateZ(-'+_this.radius+
                 'px) rotateX('+_this.drum_rotate+'deg)';
         });
         var stop_touch = function(){
