@@ -428,7 +428,8 @@ var QualitySubMenu = extend_component('QualitySubMenu', 'SubMenu', {
     },
     handleItemClick: function(item){
         var player = this.player();
-        this.parent.settings_button.unpressButton();
+        if (!this.picker_mode)
+            this.parent.settings_button.unpressButton();
         if (item.hasClass('vjs-selected'))
             return;
         var quality = item.options_;
@@ -612,6 +613,7 @@ function get_track_label(track){
     return track ? track.label||track.language||track.kind : 'Off';
 }
 var CaptionsSubMenu = extend_component('CaptionsSubMenu', 'SubMenu', {
+    picker: true,
     className: 'vjs-captions-submenu',
     title: 'Subtitles/CC',
     constructor: function(player, options, parent){
@@ -657,7 +659,8 @@ var CaptionsSubMenu = extend_component('CaptionsSubMenu', 'SubMenu', {
         var tt = player.textTracks();
         for (var i=0; i<tt.length; i++)
             tt[i].mode = tt[i]==item.options_.track ? 'showing' : 'disabled';
-        this.parent.back();
+        if (!this.picker_mode)
+            this.parent.back();
         this.handleTrackChange();
     },
     handleTrackChange: function(){
