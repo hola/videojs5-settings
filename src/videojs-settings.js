@@ -335,7 +335,7 @@ var SubMenu = extend_component('SubMenu', 'Menu', {
     },
     handleTouch: function(){
         var _this = this, position = null;
-        var step_height = this.line_height;
+        var step_height = this.line_height*get_ui_zoom(this.player_);
         this.on('touchstart', function(event){
             position = null;
             if (!_this.picker_mode||!_this.ul||!event.touches.length||
