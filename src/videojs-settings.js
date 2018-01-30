@@ -356,7 +356,8 @@ var SubMenu = extend_component('SubMenu', 'Menu', {
             if (!steps)
                 return;
             position = event.touches[0].pageY;
-            _this.drum_rotate -= steps*_this.theta;
+            // limit scrolling to 1 by event to avoid skipping menu items
+            _this.drum_rotate -= (steps<0 ? -1 : 1)*_this.theta;
             _this.ul.style.transform = 'translateZ(-'+_this.radius+
                 'px) rotateX('+_this.drum_rotate+'deg)';
         });
