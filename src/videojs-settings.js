@@ -878,7 +878,8 @@ var get_ui_zoom = function(player){
 var get_max_height = function(player){
     var ui_zoom = get_ui_zoom(player);
     var is_ios_skin = player&&player.hasClass('vjs-ios-skin');
-    var offset = is_ios_skin ? 6 : 100;
+    // XXX alexeym: get rid of magic numbers
+    var offset = is_ios_skin ? 46 : 100;
     return (player.el().offsetHeight)/ui_zoom - offset;
 };
 var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
