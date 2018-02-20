@@ -877,7 +877,8 @@ var get_ui_zoom = function(player){
 };
 var get_max_height = function(player){
     var ui_zoom = get_ui_zoom(player);
-    var offset = 100/ui_zoom+(ui_zoom>1 ? 13 : 0);
+    var is_ios_skin = player&&player.hasClass('vjs-ios-skin');
+    var offset = is_ios_skin ? 6 : 100;
     return (player.el().offsetHeight)/ui_zoom - offset;
 };
 var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
