@@ -856,24 +856,38 @@ var SelectValueMenu = extend_component('SelectValueMenu', 'SubMenu', {
         this.updateSelected();
     },
 });
+function need_invert(){
+    var screen = window.screen;
+    if (!screen)
+        return false;
+    // ios safari always use values for screen.avail*
+    // from vertical rotation while android chrome change it
+    // depending on the orientation
+    var s = screen.availHeight > screen.availWidth;
+    var w = window.innerHeight > window.innerWidth;
+    return s!=w;
+}
+// XXX alexeym: unite zoom api with vjs5-hola-skin plugin
 var get_ui_zoom = function(player){
+    function clamp(zoom){
+        // XXX alexeym: disable zoom < 1 because of wrong handling
+        // for some elements
+        return Math.max(1, zoom);
+    }
     var scale = 1;
     if (player&&!player.hasClass('vjs-ios-skin'))
         return scale;
-    var orientation = window.orientation;
-    if (orientation!==undefined)
-    {
-        orientation = orientation===90||orientation==-90 ? 'horizontal' :
-            'vertical';
-    }
+    var viewport = window.visualViewport;
+    if (viewport&&viewport.scale)
+        return clamp(1/viewport.scale);
     var screen = window.screen;
-    if (!orientation||!screen)
-        return scale;
-    var width_available = orientation=='vertical' ? screen.availWidth :
-        screen.availHeight;
+    if (!screen)
+        return clamp(scale);
+    var width_available = need_invert() ? screen.availHeight :
+        screen.availWidth;
     if (width_available)
         scale = window.innerWidth/width_available;
-    return scale;
+    return clamp(scale);
 };
 var get_max_height = function(player){
     var ui_zoom = get_ui_zoom(player);
@@ -894,14 +908,20 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
             event.stopPropagation();
         });
         var resize = this._resize = this.resize.bind(this);
+        var zoom = this._touch_zoom = this.touch_zoom.bind(this);
+        this.scale = 1;
         player.on('resize', resize);
         player.on('fullscreenchange', function(){ setTimeout(resize); });
         window.addEventListener('resize', resize);
         window.addEventListener('orientationchange', resize);
+        document.addEventListener('touchend', zoom);
     },
     dispose: function(){
         window.removeEventListener('resize', this._resize);
         window.removeEventListener('orientationchange', this._resize);
+        document.removeEventListener('touchend', this._touch_zoom);
+        if (this._zoom_bounce)
+            this._zoom_bounce = clearTimeout(this._zoom_bounce);
         Menu.prototype.dispose.call(this);
     },
     createEl: function(){
@@ -963,6 +983,24 @@ var SettingsMenu = extend_component('SettingsMenu', 'Menu', {
         this.el_.style.zoom = ui_zoom;
         if (this.active)
             this.setActive(this.active);
+    },
+    touch_zoom: function(e){
+        var scale = get_ui_zoom(this.player_);
+        if (this._zoom_bounce)
+            clearTimeout(this._zoom_bounce);
+        if (this.scale==scale)
+        {
+            // XXX alexeym: hack for animation when zoom via double-tap
+            if (e)
+                this._zoom_bounce = setTimeout(this._touch_zoom, 500);
+            return;
+        }
+        var zooming_out = this.scale<scale;
+        this.scale = scale;
+        this.resize();
+        // XXX alexeym: hack for bounce-on-zoom animation when zooming out
+        if (zooming_out)
+            this._zoom_bounce = setTimeout(this._resize, 500);
     },
     setActive: function(menu, no_transition){
         if (!no_transition && window.requestAnimationFrame)

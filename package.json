@@ -45,7 +45,7 @@
     "clipboard": "^1.5.10",
     "lodash": "4.17.4",
     "@hola.org/videojs-utils": ">=0.0.1-2 <0.0.1",
-    "@hola.org/videojs-hola-skin": "0.0.5-91",
+    "@hola.org/videojs-hola-skin": "0.0.5-104",
     "videojs-vtt.js": ">=0.12.3"
   }
 }
