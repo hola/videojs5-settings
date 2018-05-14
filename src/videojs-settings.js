@@ -43,7 +43,7 @@ extend_component('PopupMenu', 'Menu', {
         var opt = this.options_;
         _this.menuEnabled = true;
         this.addChild(new PoweredBy(player, {label:
-            'Powered by Hola Player'}));
+            'Powered by Spark Player'}));
         if (opt.copy_url!==false)
         {
             this.addChild(new CopyUrlButton(player, {label: 'Copy video URL',
@@ -86,7 +86,7 @@ extend_component('PopupMenu', 'Menu', {
         {
             this.addChild(new MenuItemLink(player, {
                 href: 'https://holaspark.com/player',
-                label: 'About Hola Player',
+                label: 'About Spark Player',
             }));
         }
         function get_overflow_parent(el){
