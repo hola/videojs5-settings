@@ -1591,14 +1591,15 @@ vjs.plugin('settings', function(opt){
             // quality configuration above might have reset the source
             // thus make sure video is ready before changing the volume
             video.ready(function(){
-                if (!opt.volume.override_local_storage)
-                {
-                    var ls_level, ls_mute;
-                    if ((ls_level = local_storage_get(volume_key))!=null)
-                        opt.volume.level = ls_level;
-                    if ((ls_mute = local_storage_get(mute_key))!=null)
-                        opt.volume.mute = ls_mute=='true';
-                }
+                // do not unmute the video if autoplay is enabled as browser
+                // can pause it
+                if (video.muted() && video.autoplay())
+                    return;
+                var ls_level, ls_mute;
+                if ((ls_level = local_storage_get(volume_key))!=null)
+                    opt.volume.level = ls_level;
+                if ((ls_mute = local_storage_get(mute_key))!=null)
+                    opt.volume.mute = ls_mute=='true';
                 video.volume(opt.volume.level);
                 video.muted(opt.volume.mute);
             });
