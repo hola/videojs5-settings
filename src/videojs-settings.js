@@ -161,6 +161,25 @@ extend_component('PopupMenu', 'Menu', {
             }
         };
     },
+    createEl: function() {
+        this.contentEl_ = vjs.createEl('ul', {
+            className: 'vjs-menu-content'
+        });
+        this.contentEl_.setAttribute('role', 'menu');
+        var el = Component.prototype.createEl('div', {
+            append: this.contentEl_,
+            className: 'vjs-menu',
+        });
+        el.setAttribute('role', 'presentation');
+        el.appendChild(this.contentEl_);
+        var _this = this;
+        vjs.on(el, 'click', function(event){
+            _this.hide();
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        });
+        return el;
+    },
     show: function(){
         this.removeClass('vjs-hidden');
         this.popped = true;
